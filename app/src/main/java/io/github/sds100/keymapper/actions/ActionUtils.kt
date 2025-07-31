@@ -30,6 +30,7 @@ import androidx.compose.material.icons.outlined.FastForward
 import androidx.compose.material.icons.outlined.FastRewind
 import androidx.compose.material.icons.outlined.FlashlightOff
 import androidx.compose.material.icons.outlined.FlashlightOn
+import androidx.compose.material.icons.outlined.Forward30
 import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Http
@@ -45,6 +46,7 @@ import androidx.compose.material.icons.outlined.PhonelinkRing
 import androidx.compose.material.icons.outlined.Pinch
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.PowerSettingsNew
+import androidx.compose.material.icons.outlined.Replay30
 import androidx.compose.material.icons.outlined.ScreenLockRotation
 import androidx.compose.material.icons.outlined.ScreenRotation
 import androidx.compose.material.icons.outlined.Settings
@@ -55,6 +57,7 @@ import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material.icons.outlined.Splitscreen
 import androidx.compose.material.icons.outlined.StayCurrentLandscape
 import androidx.compose.material.icons.outlined.StayCurrentPortrait
+import androidx.compose.material.icons.outlined.StopCircle
 import androidx.compose.material.icons.outlined.Swipe
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.ViewArray
@@ -95,17 +98,17 @@ object ActionUtils {
         ActionCategory.KEYBOARD -> R.string.action_cat_keyboard
         ActionCategory.APPS -> R.string.action_cat_apps
         ActionCategory.INPUT -> R.string.action_cat_input
-        ActionCategory.CAMERA_SOUND -> R.string.action_cat_camera_sound
+        ActionCategory.FLASHLIGHT -> R.string.action_cat_flashlight
         ActionCategory.CONNECTIVITY -> R.string.action_cat_connectivity
         ActionCategory.CONTENT -> R.string.action_cat_content
         ActionCategory.INTERFACE -> R.string.action_cat_interface
         ActionCategory.TELEPHONY -> R.string.action_cat_telephony
         ActionCategory.DISPLAY -> R.string.action_cat_display
         ActionCategory.NOTIFICATIONS -> R.string.action_cat_notifications
+        ActionCategory.SPECIAL -> R.string.action_cat_special
     }
 
     fun getCategory(id: ActionId): ActionCategory = when (id) {
-        ActionId.CONSUME_KEY_EVENT -> ActionCategory.INPUT
         ActionId.KEY_CODE -> ActionCategory.INPUT
         ActionId.KEY_EVENT -> ActionCategory.INPUT
         ActionId.TAP_SCREEN -> ActionCategory.INPUT
@@ -168,6 +171,7 @@ object ActionUtils {
         ActionId.TOGGLE_QUICK_SETTINGS -> ActionCategory.NAVIGATION
         ActionId.COLLAPSE_STATUS_BAR -> ActionCategory.NAVIGATION
 
+        ActionId.SOUND -> ActionCategory.MEDIA
         ActionId.PAUSE_MEDIA -> ActionCategory.MEDIA
         ActionId.PAUSE_MEDIA_PACKAGE -> ActionCategory.MEDIA
         ActionId.PLAY_MEDIA -> ActionCategory.MEDIA
@@ -182,6 +186,12 @@ object ActionUtils {
         ActionId.FAST_FORWARD_PACKAGE -> ActionCategory.MEDIA
         ActionId.REWIND -> ActionCategory.MEDIA
         ActionId.REWIND_PACKAGE -> ActionCategory.MEDIA
+        ActionId.STOP_MEDIA -> ActionCategory.MEDIA
+        ActionId.STOP_MEDIA_PACKAGE -> ActionCategory.MEDIA
+        ActionId.STEP_FORWARD -> ActionCategory.MEDIA
+        ActionId.STEP_FORWARD_PACKAGE -> ActionCategory.MEDIA
+        ActionId.STEP_BACKWARD -> ActionCategory.MEDIA
+        ActionId.STEP_BACKWARD_PACKAGE -> ActionCategory.MEDIA
 
         ActionId.GO_BACK -> ActionCategory.NAVIGATION
         ActionId.GO_HOME -> ActionCategory.NAVIGATION
@@ -190,11 +200,10 @@ object ActionUtils {
         ActionId.GO_LAST_APP -> ActionCategory.NAVIGATION
         ActionId.OPEN_MENU -> ActionCategory.NAVIGATION
 
-        ActionId.TOGGLE_FLASHLIGHT -> ActionCategory.CAMERA_SOUND
-        ActionId.ENABLE_FLASHLIGHT -> ActionCategory.CAMERA_SOUND
-        ActionId.DISABLE_FLASHLIGHT -> ActionCategory.CAMERA_SOUND
-        ActionId.CHANGE_FLASHLIGHT_STRENGTH -> ActionCategory.CAMERA_SOUND
-        ActionId.SOUND -> ActionCategory.CAMERA_SOUND
+        ActionId.TOGGLE_FLASHLIGHT -> ActionCategory.FLASHLIGHT
+        ActionId.ENABLE_FLASHLIGHT -> ActionCategory.FLASHLIGHT
+        ActionId.DISABLE_FLASHLIGHT -> ActionCategory.FLASHLIGHT
+        ActionId.CHANGE_FLASHLIGHT_STRENGTH -> ActionCategory.FLASHLIGHT
 
         ActionId.ENABLE_NFC -> ActionCategory.CONNECTIVITY
         ActionId.DISABLE_NFC -> ActionCategory.CONNECTIVITY
@@ -233,6 +242,8 @@ object ActionUtils {
         ActionId.DEVICE_CONTROLS -> ActionCategory.APPS
 
         ActionId.INTERACT_UI_ELEMENT -> ActionCategory.APPS
+
+        ActionId.CONSUME_KEY_EVENT -> ActionCategory.SPECIAL
     }
 
     @StringRes
@@ -291,6 +302,12 @@ object ActionUtils {
         ActionId.FAST_FORWARD_PACKAGE -> R.string.action_fast_forward_package
         ActionId.REWIND -> R.string.action_rewind
         ActionId.REWIND_PACKAGE -> R.string.action_rewind_package
+        ActionId.STOP_MEDIA -> R.string.action_stop_media
+        ActionId.STOP_MEDIA_PACKAGE -> R.string.action_stop_media_package
+        ActionId.STEP_FORWARD -> R.string.action_step_forward_media
+        ActionId.STEP_FORWARD_PACKAGE -> R.string.action_step_forward_media_package
+        ActionId.STEP_BACKWARD -> R.string.action_step_backward_media
+        ActionId.STEP_BACKWARD_PACKAGE -> R.string.action_step_backward_media_package
         ActionId.GO_BACK -> R.string.action_go_back
         ActionId.GO_HOME -> R.string.action_go_home
         ActionId.OPEN_RECENTS -> R.string.action_open_recents
@@ -404,6 +421,12 @@ object ActionUtils {
         ActionId.FAST_FORWARD_PACKAGE -> R.drawable.ic_outline_fast_forward_24
         ActionId.REWIND -> R.drawable.ic_outline_fast_rewind_24
         ActionId.REWIND_PACKAGE -> R.drawable.ic_outline_fast_rewind_24
+        ActionId.STOP_MEDIA -> R.drawable.ic_outline_pause_24
+        ActionId.STOP_MEDIA_PACKAGE -> R.drawable.ic_outline_pause_24
+        ActionId.STEP_FORWARD -> null
+        ActionId.STEP_FORWARD_PACKAGE -> null
+        ActionId.STEP_BACKWARD -> null
+        ActionId.STEP_BACKWARD_PACKAGE -> null
         ActionId.GO_BACK -> R.drawable.ic_baseline_arrow_back_24
         ActionId.GO_HOME -> R.drawable.ic_outline_home_24
         ActionId.OPEN_RECENTS -> null
@@ -721,6 +744,12 @@ object ActionUtils {
         ActionId.FAST_FORWARD_PACKAGE -> Icons.Outlined.FastForward
         ActionId.REWIND -> Icons.Outlined.FastRewind
         ActionId.REWIND_PACKAGE -> Icons.Outlined.FastRewind
+        ActionId.STOP_MEDIA -> Icons.Outlined.StopCircle
+        ActionId.STOP_MEDIA_PACKAGE -> Icons.Outlined.StopCircle
+        ActionId.STEP_FORWARD -> Icons.Outlined.Forward30
+        ActionId.STEP_FORWARD_PACKAGE -> Icons.Outlined.Forward30
+        ActionId.STEP_BACKWARD -> Icons.Outlined.Replay30
+        ActionId.STEP_BACKWARD_PACKAGE -> Icons.Outlined.Replay30
         ActionId.GO_BACK -> Icons.AutoMirrored.Outlined.ArrowBack
         ActionId.GO_HOME -> Icons.Outlined.Home
         ActionId.OPEN_RECENTS -> Icons.Outlined.ViewArray

@@ -1,5 +1,6 @@
 package io.github.sds100.keymapper.actions
 
+import android.view.InputDevice
 import android.view.KeyEvent
 import io.github.sds100.keymapper.system.accessibility.IAccessibilityService
 import io.github.sds100.keymapper.system.devices.FakeDevicesAdapter
@@ -58,7 +59,7 @@ class PerformActionsUseCaseTest {
             inputMethodAdapter = mock(),
             fileAdapter = mock(),
             suAdapter = mock {
-                on { isGranted }.then { MutableStateFlow(false) }
+                on { isRooted }.then { MutableStateFlow(false) }
             },
             shellAdapter = mock(),
             intentAdapter = mock(),
@@ -85,6 +86,7 @@ class PerformActionsUseCaseTest {
             shizukuInputEventInjector = mock(),
             permissionAdapter = mock(),
             notificationReceiverAdapter = mock(),
+            ringtoneAdapter = mock(),
         )
     }
 
@@ -142,6 +144,7 @@ class PerformActionsUseCaseTest {
             deviceId = fakeGamePad.id,
             scanCode = 0,
             repeat = 0,
+            source = InputDevice.SOURCE_GAMEPAD,
         )
 
         verify(mockImeInputEventInjector, times(1)).inputKeyEvent(expectedInputKeyModel)
@@ -171,6 +174,7 @@ class PerformActionsUseCaseTest {
             deviceId = 0,
             scanCode = 0,
             repeat = 0,
+            source = InputDevice.SOURCE_GAMEPAD,
         )
 
         verify(mockImeInputEventInjector, times(1)).inputKeyEvent(expectedInputKeyModel)
@@ -220,6 +224,7 @@ class PerformActionsUseCaseTest {
             deviceId = fakeKeyboard.id,
             scanCode = 0,
             repeat = 0,
+            source = InputDevice.SOURCE_GAMEPAD,
         )
 
         verify(mockImeInputEventInjector, times(1)).inputKeyEvent(expectedInputKeyModel)
@@ -278,6 +283,7 @@ class PerformActionsUseCaseTest {
                 deviceId = 11,
                 scanCode = 0,
                 repeat = 0,
+                source = InputDevice.SOURCE_KEYBOARD,
             ),
         )
     }
@@ -318,6 +324,7 @@ class PerformActionsUseCaseTest {
                 deviceId = 10,
                 scanCode = 0,
                 repeat = 0,
+                source = InputDevice.SOURCE_KEYBOARD,
             ),
         )
     }

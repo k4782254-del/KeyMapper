@@ -13,10 +13,14 @@ import io.github.sds100.keymapper.util.onSuccess
 import io.github.sds100.keymapper.util.otherwise
 import io.github.sds100.keymapper.util.ui.DialogResponse
 import io.github.sds100.keymapper.util.ui.MultiChoiceItem
+import io.github.sds100.keymapper.util.ui.NavDestination
+import io.github.sds100.keymapper.util.ui.NavigationViewModel
+import io.github.sds100.keymapper.util.ui.NavigationViewModelImpl
 import io.github.sds100.keymapper.util.ui.PopupUi
 import io.github.sds100.keymapper.util.ui.PopupViewModel
 import io.github.sds100.keymapper.util.ui.PopupViewModelImpl
 import io.github.sds100.keymapper.util.ui.ResourceProvider
+import io.github.sds100.keymapper.util.ui.navigate
 import io.github.sds100.keymapper.util.ui.showPopup
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -32,6 +36,7 @@ class SettingsViewModel(
     private val useCase: ConfigSettingsUseCase,
     resourceProvider: ResourceProvider,
 ) : ViewModel(),
+    NavigationViewModel by NavigationViewModelImpl(),
     PopupViewModel by PopupViewModelImpl(),
     ResourceProvider by resourceProvider {
     val sharedPrefsDataStoreWrapper = SharedPrefsDataStoreWrapper(useCase)
@@ -208,6 +213,16 @@ class SettingsViewModel(
             if (response == DialogResponse.POSITIVE) {
                 useCase.resetAllSettings()
             }
+        }
+    }
+
+    fun onRequestRootClick() {
+        useCase.requestRootPermission()
+    }
+
+    fun onProModeClick() {
+        viewModelScope.launch {
+            navigate("pro_mode_settings", NavDestination.ProMode)
         }
     }
 

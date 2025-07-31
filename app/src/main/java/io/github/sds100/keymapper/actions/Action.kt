@@ -3,7 +3,7 @@ package io.github.sds100.keymapper.actions
 import io.github.sds100.keymapper.data.entities.ActionEntity
 import io.github.sds100.keymapper.data.entities.EntityExtra
 import io.github.sds100.keymapper.data.entities.getData
-import io.github.sds100.keymapper.mappings.keymaps.KeyMap
+import io.github.sds100.keymapper.keymaps.KeyMap
 import io.github.sds100.keymapper.util.success
 import io.github.sds100.keymapper.util.then
 import io.github.sds100.keymapper.util.valueOrNull
@@ -33,11 +33,7 @@ data class Action(
 
     val multiplier: Int? = null,
     val delayBeforeNextAction: Int? = null,
-) {
-    companion object {
-        const val REPEAT_DELAY_MIN = 0
-    }
-}
+)
 
 object ActionEntityMapper {
     fun fromEntity(entity: ActionEntity): Action? {
@@ -108,7 +104,7 @@ object ActionEntityMapper {
         )
     }
 
-    fun toEntity(keyMap: KeyMap): List<ActionEntity> = keyMap.actionList.mapNotNull { action ->
+    fun toEntity(keyMap: KeyMap): List<ActionEntity> = keyMap.actionList.map { action ->
         val base = ActionDataEntityMapper.toEntity(action.data)
 
         val extras = mutableListOf<EntityExtra>().apply {
@@ -187,7 +183,7 @@ object ActionEntityMapper {
             flags = flags.withFlag(ActionEntity.ACTION_FLAG_HOLD_DOWN)
         }
 
-        return@mapNotNull ActionEntity(
+        return@map ActionEntity(
             type = base.type,
             data = base.data,
             extras = base.extras.plus(extras),

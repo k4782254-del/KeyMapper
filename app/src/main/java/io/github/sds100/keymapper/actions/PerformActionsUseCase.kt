@@ -2,6 +2,7 @@ package io.github.sds100.keymapper.actions
 
 import android.accessibilityservice.AccessibilityService
 import android.os.Build
+import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import io.github.sds100.keymapper.R
@@ -39,6 +40,7 @@ import io.github.sds100.keymapper.system.permissions.Permission
 import io.github.sds100.keymapper.system.permissions.PermissionAdapter
 import io.github.sds100.keymapper.system.phone.PhoneAdapter
 import io.github.sds100.keymapper.system.popup.PopupMessageAdapter
+import io.github.sds100.keymapper.system.ringtones.RingtoneAdapter
 import io.github.sds100.keymapper.system.root.SuAdapter
 import io.github.sds100.keymapper.system.shell.ShellAdapter
 import io.github.sds100.keymapper.system.url.OpenUrlAdapter
@@ -107,6 +109,7 @@ class PerformActionsUseCaseImpl(
     private val soundsManager: SoundsManager,
     private val permissionAdapter: PermissionAdapter,
     private val notificationReceiverAdapter: ServiceAdapter,
+    private val ringtoneAdapter: RingtoneAdapter,
 ) : PerformActionsUseCase {
 
     private val openMenuHelper by lazy {
@@ -152,11 +155,19 @@ class PerformActionsUseCaseImpl(
             is ActionData.InputKeyEvent -> {
                 val deviceId: Int = getDeviceIdForKeyEventAction(action)
 
+                // See issue #1683. Some apps ignore key events which do not have a source.
+                val source = when {
+                    InputEventUtils.isDpadKeyCode(action.keyCode) -> InputDevice.SOURCE_DPAD
+                    InputEventUtils.isGamepadButton(action.keyCode) -> InputDevice.SOURCE_GAMEPAD
+                    else -> InputDevice.SOURCE_KEYBOARD
+                }
+
                 val model = InputKeyModel(
                     keyCode = action.keyCode,
                     inputType = inputEventType,
                     metaState = keyMetaState.withFlag(action.metaState),
                     deviceId = deviceId,
+                    source = source,
                 )
 
                 result = when {
@@ -221,6 +232,18 @@ class PerformActionsUseCaseImpl(
 
             is ActionData.ControlMediaForApp.Rewind -> {
                 result = mediaAdapter.rewind(action.packageName)
+            }
+
+            is ActionData.ControlMediaForApp.Stop -> {
+                result = mediaAdapter.stop(action.packageName)
+            }
+
+            is ActionData.ControlMediaForApp.StepForward -> {
+                result = mediaAdapter.stepForward(action.packageName)
+            }
+
+            is ActionData.ControlMediaForApp.StepBackward -> {
+                result = mediaAdapter.stepBackward(action.packageName)
             }
 
             is ActionData.Rotation.CycleRotations -> {
@@ -338,9 +361,16 @@ class PerformActionsUseCaseImpl(
                 result = openUrlAdapter.openUrl(action.url)
             }
 
-            is ActionData.Sound -> {
+            is ActionData.Sound.SoundFile -> {
+                ringtoneAdapter.stopPlaying()
                 result = soundsManager.getSound(action.soundUid).then { file ->
-                    mediaAdapter.playSoundFile(file.uri, VolumeStream.ACCESSIBILITY)
+                    mediaAdapter.playFile(file.uri, VolumeStream.ACCESSIBILITY)
+                }
+            }
+
+            is ActionData.Sound.Ringtone -> {
+                result = mediaAdapter.stopFileMedia().then {
+                    ringtoneAdapter.play(action.uri)
                 }
             }
 
@@ -545,6 +575,18 @@ class PerformActionsUseCaseImpl(
 
             is ActionData.ControlMedia.Rewind -> {
                 result = mediaAdapter.rewind()
+            }
+
+            is ActionData.ControlMedia.Stop -> {
+                result = mediaAdapter.stop()
+            }
+
+            is ActionData.ControlMedia.StepForward -> {
+                result = mediaAdapter.stepForward()
+            }
+
+            is ActionData.ControlMedia.StepBackward -> {
+                result = mediaAdapter.stepBackward()
             }
 
             is ActionData.GoBack -> {
@@ -811,7 +853,7 @@ class PerformActionsUseCaseImpl(
                             matchAccessibilityNode(node, action)
                         },
                         performAction = { AccessibilityNodeAction(action = action.nodeAction.accessibilityActionId) },
-                    )
+                    ).otherwise { Error.UiElementNotFound }
                 }
             }
         }
@@ -911,32 +953,36 @@ class PerformActionsUseCaseImpl(
         node: AccessibilityNodeModel,
         action: ActionData.InteractUiElement,
     ): Boolean {
+        if (!node.actions.contains(action.nodeAction.accessibilityActionId)) {
+            return false
+        }
+
         if (compareIfNonNull(node.uniqueId, action.uniqueId)) {
             return true
         }
 
-        val viewResourceIdMatches = node.viewResourceId == action.viewResourceId
-        val classNameMatches = node.className == action.className
+        if (action.contentDescription == null && action.text == null) {
+            if (compareIfNonNull(node.viewResourceId, action.viewResourceId)) {
+                return true
+            }
 
-        if (compareIfNonNull(
-                node.contentDescription,
-                action.contentDescription,
-            ) &&
-            viewResourceIdMatches &&
-            classNameMatches
-        ) {
-            return true
-        }
+            if (compareIfNonNull(node.className, action.className)) {
+                return true
+            }
+        } else {
+            if (compareIfNonNull(node.contentDescription, action.contentDescription) ||
+                compareIfNonNull(node.text, action.text)
+            ) {
+                if (action.viewResourceId != null) {
+                    return node.viewResourceId == action.viewResourceId
+                }
 
-        if (compareIfNonNull(node.text, action.text) &&
-            viewResourceIdMatches &&
-            classNameMatches
-        ) {
-            return true
-        }
+                if (action.className != null) {
+                    return node.className == action.className
+                }
 
-        if (viewResourceIdMatches) {
-            return true
+                return true
+            }
         }
 
         return false

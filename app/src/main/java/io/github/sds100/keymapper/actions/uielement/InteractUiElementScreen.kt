@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutoutPadding
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -42,6 +43,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -57,12 +59,15 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.window.core.layout.WindowHeightSizeClass
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import io.github.sds100.keymapper.R
 import io.github.sds100.keymapper.compose.KeyMapperTheme
@@ -73,6 +78,7 @@ import io.github.sds100.keymapper.util.drawable
 import io.github.sds100.keymapper.util.ui.compose.ComposeIconInfo
 import io.github.sds100.keymapper.util.ui.compose.KeyMapperDropdownMenu
 import io.github.sds100.keymapper.util.ui.compose.OptionsHeaderRow
+import io.github.sds100.keymapper.util.ui.compose.WindowSizeClassExt.compareTo
 import io.github.sds100.keymapper.util.ui.compose.icons.AdGroup
 import io.github.sds100.keymapper.util.ui.compose.icons.JumpToElement
 import io.github.sds100.keymapper.util.ui.compose.icons.KeyMapperIcons
@@ -135,7 +141,7 @@ fun InteractUiElementScreen(
         composable(DEST_SELECT_APP) {
             ChooseAppScreen(
                 modifier = Modifier.fillMaxSize(),
-                title = stringResource(R.string.action_interact_ui_element_choose_element_title),
+                title = stringResource(R.string.action_interact_ui_element_choose_app_title),
                 state = appListState,
                 query = appSearchQuery,
                 onQueryChange = { query -> viewModel.appSearchQuery.update { query } },
@@ -161,6 +167,7 @@ fun InteractUiElementScreen(
                     navController.popBackStack(route = DEST_LANDING, inclusive = false)
                 },
                 onSelectInteractionType = viewModel::onSelectInteractionTypeFilter,
+                onAdditionalElementsCheckedChange = viewModel::onAdditionalElementsCheckedChanged,
             )
         }
     }
@@ -179,6 +186,10 @@ private fun LandingScreen(
     onDescriptionChanged: (String) -> Unit = {},
 ) {
     val snackbarHostState = SnackbarHostState()
+
+    val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+    val widthSizeClass = windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass
+    val heightSizeClass = windowAdaptiveInfo.windowSizeClass.windowHeightSizeClass
 
     Scaffold(
         modifier.displayCutoutPadding(),
@@ -224,7 +235,7 @@ private fun LandingScreen(
                     end = endPadding,
                 ),
         ) {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            Column {
                 Text(
                     modifier = Modifier.padding(
                         start = 16.dp,
@@ -236,44 +247,91 @@ private fun LandingScreen(
                     style = MaterialTheme.typography.titleLarge,
                 )
 
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    text = stringResource(R.string.action_interact_ui_element_description),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
+                if (heightSizeClass == WindowHeightSizeClass.COMPACT || widthSizeClass >= WindowWidthSizeClass.EXPANDED) {
+                    Row {
+                        Column(
+                            modifier = Modifier
+                                .verticalScroll(rememberScrollState())
+                                .fillMaxHeight()
+                                .weight(1f),
+                        ) {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                text = stringResource(R.string.action_interact_ui_element_description),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
 
-                RecordingSection(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    state = recordState,
-                    onRecordClick = onRecordClick,
-                    openSelectAppScreen = openSelectAppScreen,
-                )
+                            RecordingSection(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                state = recordState,
+                                onRecordClick = onRecordClick,
+                                openSelectAppScreen = openSelectAppScreen,
+                            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
 
-                if (selectedElementState != null) {
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                    )
+                        if (selectedElementState != null) {
+                            SelectedElementSection(
+                                modifier = Modifier
+                                    .verticalScroll(rememberScrollState())
+                                    .fillMaxHeight()
+                                    .padding(horizontal = 16.dp)
+                                    .weight(1f),
+                                state = selectedElementState,
+                                onSelectInteractionType = onSelectInteractionType,
+                                onDescriptionChanged = onDescriptionChanged,
+                            )
+                        }
+                    }
+                } else {
+                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            text = stringResource(R.string.action_interact_ui_element_description),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                    SelectedElementSection(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        state = selectedElementState,
-                        onSelectInteractionType = onSelectInteractionType,
-                        onDescriptionChanged = onDescriptionChanged,
-                    )
+                        RecordingSection(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            state = recordState,
+                            onRecordClick = onRecordClick,
+                            openSelectAppScreen = openSelectAppScreen,
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        if (selectedElementState != null) {
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            SelectedElementSection(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                state = selectedElementState,
+                                onSelectInteractionType = onSelectInteractionType,
+                                onDescriptionChanged = onDescriptionChanged,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -389,7 +447,7 @@ private fun InteractionCountBox(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         pluralStringResource(
-                            R.plurals.action_interact_ui_element_interactions_detected,
+                            R.plurals.action_interact_ui_element_elements_detected,
                             interactionCount,
                             interactionCount,
                         ),
@@ -397,7 +455,7 @@ private fun InteractionCountBox(
                     )
 
                     Text(
-                        stringResource(R.string.action_interact_ui_element_choose_interaction),
+                        stringResource(R.string.action_interact_ui_element_choose_app_title),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
@@ -474,6 +532,8 @@ private fun SelectedElementSection(
             value = state.description,
             onValueChange = onDescriptionChanged,
             isError = isError,
+            maxLines = 1,
+            singleLine = true,
             supportingText = if (isError) {
                 { Text(stringResource(R.string.error_cant_be_empty)) }
             } else {
@@ -523,9 +583,18 @@ private fun SelectedElementSection(
             )
 
             Text(text = state.nodeText, style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        if (state.nodeToolTipHint != null) {
+            Text(
+                text = stringResource(R.string.action_interact_ui_element_tooltip_label),
+                style = MaterialTheme.typography.titleSmall,
+            )
+
+            Text(text = state.nodeToolTipHint, style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
         if (state.nodeClassName != null) {
             Text(
@@ -572,7 +641,7 @@ private fun SelectedElementSection(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        KeyMapperDropdownMenu<NodeInteractionType>(
+        KeyMapperDropdownMenu(
             expanded = interactionTypeExpanded,
             onExpandedChange = { interactionTypeExpanded = it },
             values = state.interactionTypes,
@@ -597,35 +666,52 @@ private fun PreviewEmpty() {
 
 @Preview
 @Composable
-private fun PreviewSelectedElement() {
-    val appIcon = LocalContext.current.drawable(R.mipmap.ic_launcher_round)
-
-    KeyMapperTheme {
-        LandingScreen(
-            recordState = State.Data(RecordUiElementState.Recorded(3)),
-            selectedElementState = SelectedUiElementState(
-                description = "Tap test node",
-                packageName = "com.example.test",
-                appName = "Test App",
-                appIcon = ComposeIconInfo.Drawable(appIcon),
-                nodeText = "Test Node",
-                nodeClassName = "android.widget.ImageButton",
-                nodeViewResourceId = "io.github.sds100.keymapper:id/menu_button",
-                nodeUniqueId = "123",
-                interactionTypes = listOf(NodeInteractionType.LONG_CLICK to "Tap and hold"),
-                selectedInteraction = NodeInteractionType.LONG_CLICK,
-            ),
-        )
-    }
-}
-
-@Preview
-@Composable
 private fun PreviewLoading() {
     KeyMapperTheme {
         LandingScreen(
             recordState = State.Loading,
             selectedElementState = null,
+        )
+    }
+}
+
+@Composable
+private fun selectedUiElementState(): SelectedUiElementState {
+    val appIcon = LocalContext.current.drawable(R.mipmap.ic_launcher_round)
+
+    return SelectedUiElementState(
+        description = "Tap test node",
+        packageName = "com.example.test",
+        appName = "Test App",
+        appIcon = ComposeIconInfo.Drawable(appIcon),
+        nodeText = "Test Node",
+        nodeToolTipHint = "Test tooltip",
+        nodeClassName = "android.widget.ImageButton",
+        nodeViewResourceId = "io.github.sds100.keymapper:id/menu_button",
+        nodeUniqueId = "123",
+        interactionTypes = listOf(NodeInteractionType.LONG_CLICK to "Tap and hold"),
+        selectedInteraction = NodeInteractionType.LONG_CLICK,
+    )
+}
+
+@Preview(device = Devices.PIXEL_7)
+@Composable
+private fun PreviewSelectedElementPortrait() {
+    KeyMapperTheme {
+        LandingScreen(
+            recordState = State.Data(RecordUiElementState.Recorded(3)),
+            selectedElementState = selectedUiElementState(),
+        )
+    }
+}
+
+@Preview(widthDp = 800, heightDp = 300)
+@Composable
+private fun PreviewSelectedElementLandscape() {
+    KeyMapperTheme {
+        LandingScreen(
+            recordState = State.Data(RecordUiElementState.Recorded(3)),
+            selectedElementState = selectedUiElementState(),
         )
     }
 }

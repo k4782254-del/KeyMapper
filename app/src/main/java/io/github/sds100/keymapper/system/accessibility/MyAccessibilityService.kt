@@ -22,25 +22,22 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
-import io.github.sds100.keymapper.Constants
 import io.github.sds100.keymapper.R
-import io.github.sds100.keymapper.ServiceLocator
 import io.github.sds100.keymapper.actions.pinchscreen.PinchScreenType
 import io.github.sds100.keymapper.api.IKeyEventRelayServiceCallback
 import io.github.sds100.keymapper.api.KeyEventRelayService
 import io.github.sds100.keymapper.api.KeyEventRelayServiceWrapperImpl
-import io.github.sds100.keymapper.mappings.FingerprintGestureType
-import io.github.sds100.keymapper.mappings.keymaps.trigger.KeyEventDetectionSource
+import io.github.sds100.keymapper.keymaps.FingerprintGestureType
 import io.github.sds100.keymapper.system.devices.InputDeviceUtils
 import io.github.sds100.keymapper.system.inputevents.MyKeyEvent
 import io.github.sds100.keymapper.system.inputevents.MyMotionEvent
+import io.github.sds100.keymapper.trigger.KeyEventDetectionSource
 import io.github.sds100.keymapper.util.Error
 import io.github.sds100.keymapper.util.Inject
 import io.github.sds100.keymapper.util.InputEventType
 import io.github.sds100.keymapper.util.MathUtils
 import io.github.sds100.keymapper.util.Result
 import io.github.sds100.keymapper.util.Success
-import io.github.sds100.keymapper.util.onSuccess
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -124,6 +121,16 @@ class MyAccessibilityService :
             }
         }
 
+    override var notificationTimeout: Long?
+        get() = serviceInfo?.notificationTimeout
+        set(value) {
+            if (serviceInfo != null && value != null) {
+                serviceInfo = serviceInfo.apply {
+                    notificationTimeout = value
+                }
+            }
+        }
+
     private val relayServiceCallback: IKeyEventRelayServiceCallback =
         object : IKeyEventRelayServiceCallback.Stub() {
             override fun onKeyEvent(event: KeyEvent?): Boolean {
@@ -140,6 +147,7 @@ class MyAccessibilityService :
                             scanCode = event.scanCode,
                             device = device,
                             repeatCount = event.repeatCount,
+                            source = event.source,
                         ),
                     )
                 }
@@ -191,14 +199,6 @@ class MyAccessibilityService :
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        val inputMethodAdapter = ServiceLocator.inputMethodAdapter(this)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            inputMethodAdapter.getInfoByPackageName(Constants.PACKAGE_NAME).onSuccess {
-                softKeyboardController.setInputMethodEnabled(it.id, true)
-                softKeyboardController.switchToInputMethod(it.id)
-            }
-        }
 
         Timber.i("Accessibility service: onServiceConnected")
         lifecycleRegistry.currentState = Lifecycle.State.STARTED
@@ -315,6 +315,7 @@ class MyAccessibilityService :
                     scanCode = event.scanCode,
                     device = device,
                     repeatCount = event.repeatCount,
+                    source = event.source,
                 ),
                 KeyEventDetectionSource.ACCESSIBILITY_SERVICE,
             )

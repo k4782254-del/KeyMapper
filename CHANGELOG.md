@@ -1,15 +1,57 @@
-## [3.1.0](https://github.com/sds100/KeyMapper/releases/tag/v3.1.0)
+## [3.1.2](https://github.com/sds100/KeyMapper/releases/tag/v3.1.2)
 
 #### TO BE RELEASED
 
 ## Added
 
+- #1466 show onboarding when creating a key map for the first time
+
+## Changed
+
+- #1701 improve the order of the actions and categories
+
+## Bug fixes
+
+- #1686 (more fixes) do not show some screens behind system bars on the left/right side of the device.
+- #1701 optimize the trigger screen for smaller screens so elements are less cut off.
+- #1699 Do not highlight a floating button as if it is pressed after triggering a key event action from it.
+
+## [3.1.1](https://github.com/sds100/KeyMapper/releases/tag/v3.1.1)
+
+#### 12 May 2025
+
+## Added
+
+- #1637 show a home screen error if notification permission is not granted.
+- #1435 Pick system sounds/ringtones for the Sound action.
+
+## Bug fixes
+
+- Do not automatically select the key mapper keyboard when the accessibility service starts.
+- #1686 do not show some screens behind system bars on the left/right side of the device.
+- Use same sized list items when choosing a constraint.
+
+## [3.1.0](https://github.com/sds100/KeyMapper/releases/tag/v3.1.0)
+
+#### 10 May 2025
+
+## Added
+
 - #699 Time constraints ⏰
 - #257 Action to interact with user interface elements inside other apps.
+- #1663 Actions to stop, step forward, and step backward playing media.
+- #1682 Show "Purchased!" text next to the use button for advanced triggers.
 
 ## Changed
 
 - Rename tap screen actions inside key maps.
+
+## Bug fixes
+
+- #1683 key event actions work in Minecraft and other apps again.
+- Export log files as .txt instead of .zip files.
+- #1684 Removed the redundant and broken refresh devices button when configuring a key event action because they are automatically refreshed anyway.
+- #1687 restoring key map groups would sometimes fail.
 
 ## [3.0.1](https://github.com/sds100/KeyMapper/releases/tag/v3.0.1)
 

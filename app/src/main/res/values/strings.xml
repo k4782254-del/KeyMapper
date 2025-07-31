@@ -25,7 +25,7 @@
     <string name="button_restart_accessibility_service">Restart accessibility service</string>
     <string name="share_backup">Share</string>
     <string name="app_list_empty">Nothing here!</string>
-    <string name="ui_element_list_empty">Nothing here!</string>
+    <string name="ui_element_list_empty">Key Mapper did not detect any interactions. Try showing additional elements.</string>
     <string name="stop_repeating_dot_dot_dot">Stop repeating when…</string>
     <string name="stop_repeating_when_trigger_released">Trigger is released</string>
     <string name="stop_repeating_trigger_pressed_again">Trigger is pressed again</string>
@@ -52,7 +52,7 @@
     <string name="clip_key_mapper_log">Key Mapper log</string>
 
     <string name="whats_new">What\'s New</string>
-    <string name="caption_action_type_sound">The sound file will be copied to Key Mapper\'s private data folder, which means your actions will still work even if the file is moved or deleted. It will also be backed up with your key maps in the zip folder.
+    <string name="caption_action_type_sound">You can either use a system ringtone or select a custom sound file.\n\nThe custom sound file will be copied to Key Mapper\'s private data folder, which means your actions will still work even if the file is moved or deleted. It will also be backed up with your key maps in the zip folder.
     You can delete saved sound files in the settings.</string>
 
     <string name="caption_no_paired_bt_devices">Can\'t find any paired devices. Is Bluetooth turned on?</string>
@@ -90,6 +90,7 @@
     <string name="home_success_accessibility_service_is_enabled">The accessibility service is enabled! Your key maps should work.</string>
     <string name="home_error_logging_enabled">Extra logging is turned on! Turn this off if you aren\'t trying to fix an issue.</string>
     <string name="home_error_logging_enabled_button">Turn off</string>
+    <string name="home_error_notification_permission">Turn on notifications for better on-screen messages, more actions and service updates.</string>
 
     <string name="title_about">About</string>
     <!--  Action descriptions  -->
@@ -107,6 +108,7 @@
     <string name="description_pinch_coordinate_with_description">%s with %d finger(s) on coordinates %d/%d to with a pinch distance of %dpx %dms (%s)</string>
     <string name="description_phone_call">Call %s</string>
     <string name="description_sound">Play sound: %s</string>
+    <string name="description_sound_unknown">Play unknown sound</string>
     <!--  Action descriptions  -->
 
     <!--  Headers  -->
@@ -409,6 +411,7 @@
     <string name="button_config_intent_set_flags">Set flags</string>
     <string name="button_slider_repeat_no_limit">No limit</string>
     <string name="button_choose_sound_file">Choose sound file</string>
+    <string name="button_choose_system_sound_file">Choose system ringtone</string>
     <string name="button_edit_action">Edit action</string>
     <string name="button_replace_action">Replace action</string>
     <!-- Button titles -->
@@ -507,6 +510,9 @@
     <string name="dialog_title_keycode_to_scancode_trigger_explanation">Unrecognized key code</string>
     <string name="dialog_message_keycode_to_scancode_trigger_explanation">The pressed button was not recognized by the input system. In the past Key Mapper detected such buttons as one and the same. Currently the app tries to distinguish the button based on the scan code, which should be more unique. However, this is a makeshift incomplete solution, which doesn\'t guarantee uniqueness.</string>
 
+    <string name="dialog_title_request_notification_permission">Turn on notifications</string>
+    <string name="dialog_message_request_notification_permission">Some actions and options need this permission to work. You can also get notified when there is important news about the app.</string>
+
     <string name="pos_done">Done</string>
     <string name="pos_grant_write_secure_settings_guide">Guide</string>
     <string name="pos_start_service_with_adb_guide">Guide</string>
@@ -519,11 +525,13 @@
     <string name="pos_discard_changes">Discard changes</string>
     <string name="pos_save">Save</string>
     <string name="pos_understood">Understood</string>
+    <string name="pos_turn_on">Turn on</string>
 
     <string name="neg_turn_off">Turn off</string>
     <string name="neg_cancel">Cancel</string>
     <string name="neg_dont_show_again">Don\'t show again</string>
     <string name="neg_keep_editing">Keep editing</string>
+    <string name="neg_no_thanks">No thanks</string>
 
     <string name="neutral_hide">Hide</string>
     <string name="neutral_go_to_dont_kill_my_app">Online guide</string>
@@ -626,9 +634,8 @@
 
     <string name="title_pref_show_toast_when_auto_changing_ime">Show an on-screen message when automatically changing the keyboard</string>
 
-    <string name="title_pref_root_permission">Key Mapper has root permission</string>
-    <string name="summary_pref_root_permission">Enable this if you want to use features/actions which only work on rooted devices. Key Mapper must have root permission from your root-access-management app (e.g Magisk, SuperSU) for these features to work.
-            Only turn this on if you know your device is rooted and you have given Key Mapper root permission.</string>
+    <string name="title_pref_root_permission">Request root permission</string>
+    <string name="summary_pref_root_permission">If your device is rooted then this will show the root permission pop up from Magisk or your root app.</string>
 
     <string name="title_pref_dark_theme">Choose theme</string>
     <string name="summary_pref_dark_theme">Light and dark themes available</string>
@@ -689,6 +696,9 @@
     <string name="dialog_title_reset_settings">DANGER!</string>
     <string name="dialog_message_reset_settings">Are you sure you want to reset all settings in the app to the default? Your key maps will NOT be reset. The introduction screen and all warning pop ups will show again.</string>
     <string name="pos_button_reset_settings">Yes, reset</string>
+
+    <string name="title_pref_pro_mode">PRO mode</string>
+    <string name="summary_pref_pro_mode">Advanced detection of key events.\</string>
 
 
     <!--Preference titles and summaries-->
@@ -981,11 +991,11 @@
 
     <string name="action_next_track">Next track</string>
     <string name="action_next_track_package">Next track for an app</string>
-    <string name="action_next_track_package_formatted">Next track for %s</string>>
+    <string name="action_next_track_package_formatted">Next track for %s</string>
 
     <string name="action_previous_track">Previous track</string>
     <string name="action_previous_track_package">Previous track for an app</string>
-    <string name="action_previous_track_package_formatted">Previous track for %s</string>>
+    <string name="action_previous_track_package_formatted">Previous track for %s</string>
 
     <string name="action_fast_forward">Fast forward</string>
     <string name="action_fast_forward_package">Fast forward for an app</string>
@@ -994,8 +1004,20 @@
 
     <string name="action_rewind">Rewind</string>
     <string name="action_rewind_package">Rewind for an app</string>
-    <string name="action_rewind_package_formatted">Rewind for %s</string>>
+    <string name="action_rewind_package_formatted">Rewind for %s</string>
     <string name="action_rewind_message">Not all media apps support rewinding. E.g Google Play Music.</string>
+
+    <string name="action_stop_media">Stop media</string>
+    <string name="action_stop_media_package">Stop media for an app</string>
+    <string name="action_stop_media_package_formatted">Stop media for %s</string>
+
+    <string name="action_step_forward_media">Step media forward</string>
+    <string name="action_step_forward_media_package">Step media forward for an app</string>
+    <string name="action_step_forward_media_package_formatted">Step media forward for %s</string>
+
+    <string name="action_step_backward_media">Step media backward</string>
+    <string name="action_step_backward_media_package">Step media backward for an app</string>
+    <string name="action_step_backward_media_package_formatted">Step media backward for %s</string>
 
     <string name="action_go_back">Go back</string>
     <string name="action_go_home">Go home</string>
@@ -1104,29 +1126,28 @@
     <string name="action_http_request_authorization_supporting_text">You must prepend \'Bearer\' if necessary</string>
 
     <string name="action_interact_ui_element_title">Interact with app element</string>
-    <string name="action_interact_ui_element_description">Key Mapper can detect and interact with app elements like menus, tabs, buttons and checkboxes. You need to record yourself interacting with the app element so that Key Mapper knows what you want to do.</string>
+    <string name="action_interact_ui_element_description">Key Mapper can detect and interact with app elements like menus, tabs, buttons and checkboxes. You need to record yourself interacting with the app so that Key Mapper knows what you want to do.</string>
     <string name="action_interact_ui_element_start_recording">Start recording</string>
     <string name="action_interact_ui_element_stop_recording">Stop recording (%s min left)</string>
-    <string name="action_interact_ui_element_record_instruction">Go to another app and interact with it. Key Mapper will record what you do and you can choose which interactions you want to use in your key map. Open Key Mapper again when you’re done.</string>
-    <plurals name="action_interact_ui_element_interactions_detected">
-        <item quantity="one">%d interaction detected</item>
-        <item quantity="other">%d interactions detected</item>
+    <plurals name="action_interact_ui_element_elements_detected">
+        <item quantity="one">%d element detected</item>
+        <item quantity="other">%d elements detected</item>
     </plurals>
-    <string name="action_interact_ui_element_choose_interaction">Choose the app to interact with</string>
+    <string name="action_interact_ui_element_choose_app_title">Choose the app to interact with</string>
     <string name="action_interact_ui_element_record_again">Record again</string>
     <string name="action_interact_ui_element_choose_element_title">Choose app element</string>
     <string name="action_interact_ui_element_choose_element_text">Choose the element you want your key map to interact with.</string>
     <string name="action_interact_ui_element_choose_element_not_found_subtitle">Can\'t find what you’re looking for?</string>
     <string name="action_interact_ui_element_choose_element_not_found_text">Not all apps are compatible. For incompatible apps you can try the Tap Screen action instead.</string>
-    <string name="action_interact_ui_element_interaction_type_dropdown">Interaction type</string>
+    <string name="action_interact_ui_element_interaction_type_dropdown">Possible interactions</string>
     <string name="action_interact_ui_element_interaction_type_dropdown_caption">Select how you want to interact with the UI element.</string>
     <string name="action_interact_ui_element_filter_interaction_type_dropdown">Filter interaction type</string>
+    <string name="action_interact_ui_element_checkbox_additional_elements">Show additional elements</string>
 
     <string name="action_interact_ui_element_interaction_type_any">Any</string>
     <string name="action_interact_ui_element_interaction_type_click">Tap</string>
     <string name="action_interact_ui_element_interaction_type_long_click">Tap and hold</string>
     <string name="action_interact_ui_element_interaction_type_focus">Focus</string>
-    <string name="action_interact_ui_element_interaction_type_select">Select</string>
     <string name="action_interact_ui_element_interaction_type_scroll_forward">Scroll forward</string>
     <string name="action_interact_ui_element_interaction_type_scroll_backward">Scroll backward</string>
     <string name="action_interact_ui_element_interaction_type_expand">Expand</string>
@@ -1136,8 +1157,9 @@
     <string name="action_interact_ui_element_interaction_details_title">Interaction details</string>
     <string name="action_interact_ui_element_description_label">Description</string>
     <string name="action_interact_ui_element_app_label">App</string>
-    <string name="action_interact_ui_element_text_label">Text / content description</string>
+    <string name="action_interact_ui_element_text_label">Text/content description</string>
     <string name="action_interact_ui_element_class_name_label">Class name</string>
+    <string name="action_interact_ui_element_tooltip_label">Tooltip/hint</string>
     <string name="action_interact_ui_element_view_id_label">View resource ID</string>
     <string name="action_interact_ui_element_unique_id_label">Unique ID</string>
     <string name="action_interact_ui_element_interaction_types_label">Interaction types</string>
@@ -1150,13 +1172,14 @@
     <string name="action_cat_keyboard">Keyboard</string>
     <string name="action_cat_apps">Apps</string>
     <string name="action_cat_input">Input</string>
-    <string name="action_cat_camera_sound">Camera &amp; Sound</string>
+    <string name="action_cat_flashlight">Flashlight</string>
     <string name="action_cat_connectivity">Connectivity</string>
     <string name="action_cat_content">Content</string>
     <string name="action_cat_interface">Interface</string>
     <string name="action_cat_telephony">Phone</string>
     <string name="action_cat_display">Display</string>
     <string name="action_cat_notifications">Notifications</string>
+    <string name="action_cat_special">Special</string>
     <!-- action category labels -->
 
     <!--  Intent action type strings  -->
@@ -1203,8 +1226,18 @@
     <!--  Intent action type strings  -->
 
     <!--  Tap targets  -->
-    <string name="tap_target_quick_start_guide_primary">Quick Start Guide</string>
-    <string name="tap_target_quick_start_guide_secondary">Check out the Quick Start Guide if you are stuck.</string>
+    <string name="tap_target_skip_tutorial_button">Skip tutorial</string>
+    <string name="tap_target_create_key_map_title">Create your first key map!</string>
+    <string name="tap_target_create_key_map_message">A key map is a rule to tell your device what to do when a button is pressed.</string>
+    <string name="tap_target_record_trigger_title">Record a trigger</string>
+    <string name="tap_target_record_trigger_message">Tap record, and then press the physical buttons you want to change.</string>
+    <string name="tap_target_advanced_triggers_title">Love Key Mapper? ❤️</string>
+    <string name="tap_target_advanced_triggers_message">For an affordable price, make powerful key maps with on-screen floating buttons and support the development of more great features 👨‍💻.</string>
+
+    <string name="tap_target_choose_action_title">Choose an action</string>
+    <string name="tap_target_choose_action_message">An action is what should happen when you press the trigger.</string>
+    <string name="tap_target_choose_constraint_title">Choose a constraint (optional)</string>
+    <string name="tap_target_choose_constraint_message">If you want the key map to only work in certain situations, for example, when an app is open.</string>
     <!--  Tap targets  -->
 
     <!--  About  -->
@@ -1271,6 +1304,7 @@
     <string name="unlock_product_button">Unlock (%s)</string>
     <string name="use_product_button">Use</string>
     <string name="loading_product_button">Loading…</string>
+    <string name="purchased_product_label">Purchased!</string>
     <string name="retry_loading_price_button">Retry fetching price</string>
     <string name="purchasing_error_cancelled">Purchase cancelled.</string>
     <string name="purchasing_error_not_implemented">This requires a paid feature that can only be bought by downloading Key Mapper from Google Play.</string>
@@ -1532,4 +1566,28 @@
         <item quantity="one">+%d inherited constraint</item>
         <item quantity="other">+%d inherited constraints</item>
     </plurals>
+
+
+    <!--  Pro mode  -->
+    <string name="pro_mode_app_bar_title">PRO mode</string>
+    <string name="pro_mode_warning_title">Important!</string>
+    <string name="pro_mode_warning_text">These settings are dangerous and can cause your buttons to stop working if you set them incorrectly.\n\nIf you make a mistake, you may need to force restart your device by holding down the power button for a long time.</string>
+    <string name="pro_mode_warning_understand_button_countdown">%d…</string>
+    <string name="pro_mode_warning_understand_button_not_completed">I understand</string>
+    <string name="pro_mode_warning_understand_button_completed">Understood</string>
+    <string name="pro_mode_set_up_title">Set up</string>
+    <string name="pro_mode_root_detected_title">Root detected</string>
+    <string name="pro_mode_root_detected_text">You can skip the set up process by giving Key Mapper root permission. This will let Key Mapper auto start PRO mode on boot as well.</string>
+    <string name="pro_mode_root_detected_button">Use root</string>
+    <string name="pro_mode_shizuku_detected_title">Shizuku detected</string>
+    <string name="pro_mode_shizuku_detected_text">You can skip the set up process by giving Key Mapper Shizuku permission.</string>
+    <string name="pro_mode_shizuku_detected_button">Use Shizuku</string>
+    <string name="pro_mode_set_up_with_key_mapper_title">Set up with Key Mapper</string>
+    <string name="pro_mode_set_up_with_key_mapper_button">Continue</string>
+    <string name="pro_mode_options_title">Options</string>
+    <string name="pro_mode_enable_for_all_key_maps_title">Enable PRO mode for all key maps</string>
+    <string name="pro_mode_enable_for_all_key_maps_text">Key Mapper will use the ADB Shell for remapping</string>
+    <string name="pro_mode_settings_unavailable_text">These settings are unavailable until you acknowledge the warning.</string>
+
+
 </resources>

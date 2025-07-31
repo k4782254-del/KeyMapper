@@ -6,7 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Android
 import io.github.sds100.keymapper.R
 import io.github.sds100.keymapper.actions.pinchscreen.PinchScreenType
-import io.github.sds100.keymapper.mappings.keymaps.KeyMap
+import io.github.sds100.keymapper.keymaps.KeyMap
 import io.github.sds100.keymapper.system.camera.CameraLens
 import io.github.sds100.keymapper.system.devices.InputDeviceUtils
 import io.github.sds100.keymapper.system.display.OrientationUtils
@@ -222,6 +222,9 @@ class ActionUiHelper(
                         is ActionData.ControlMediaForApp.PlayPause -> R.string.action_play_pause_media_package_formatted
                         is ActionData.ControlMediaForApp.PreviousTrack -> R.string.action_previous_track_package_formatted
                         is ActionData.ControlMediaForApp.Rewind -> R.string.action_rewind_package_formatted
+                        is ActionData.ControlMediaForApp.Stop -> R.string.action_stop_media_package_formatted
+                        is ActionData.ControlMediaForApp.StepForward -> R.string.action_step_forward_media_package_formatted
+                        is ActionData.ControlMediaForApp.StepBackward -> R.string.action_step_backward_media_package_formatted
                     }
 
                     getString(resId, appName)
@@ -235,6 +238,9 @@ class ActionUiHelper(
                         is ActionData.ControlMediaForApp.PlayPause -> R.string.action_play_pause_media_package
                         is ActionData.ControlMediaForApp.PreviousTrack -> R.string.action_previous_track_package
                         is ActionData.ControlMediaForApp.Rewind -> R.string.action_rewind_package
+                        is ActionData.ControlMediaForApp.Stop -> R.string.action_stop_media_package
+                        is ActionData.ControlMediaForApp.StepForward -> R.string.action_step_forward_media_package
+                        is ActionData.ControlMediaForApp.StepBackward -> R.string.action_step_backward_media_package
                     }
 
                     getString(resId)
@@ -428,7 +434,17 @@ class ActionUiHelper(
 
         is ActionData.Text -> getString(R.string.description_text_block, action.text)
         is ActionData.Url -> getString(R.string.description_url, action.url)
-        is ActionData.Sound -> getString(R.string.description_sound, action.soundDescription)
+        is ActionData.Sound.SoundFile -> getString(
+            R.string.description_sound,
+            action.soundDescription,
+        )
+
+        is ActionData.Sound.Ringtone -> {
+            getRingtoneLabel(action.uri).handle(
+                onSuccess = { getString(R.string.description_sound, it) },
+                onError = { getString(R.string.description_sound_unknown) },
+            )
+        }
 
         ActionData.AirplaneMode.Disable -> getString(R.string.action_disable_airplane_mode)
         ActionData.AirplaneMode.Enable -> getString(R.string.action_enable_airplane_mode)
@@ -453,6 +469,9 @@ class ActionUiHelper(
         ActionData.ControlMedia.PlayPause -> getString(R.string.action_play_pause_media)
         ActionData.ControlMedia.PreviousTrack -> getString(R.string.action_previous_track)
         ActionData.ControlMedia.Rewind -> getString(R.string.action_rewind)
+        ActionData.ControlMedia.Stop -> getString(R.string.action_stop_media)
+        ActionData.ControlMedia.StepForward -> getString(R.string.action_step_forward_media)
+        ActionData.ControlMedia.StepBackward -> getString(R.string.action_step_backward_media)
 
         ActionData.CopyText -> getString(R.string.action_text_copy)
         ActionData.CutText -> getString(R.string.action_text_cut)

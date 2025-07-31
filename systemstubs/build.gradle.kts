@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
+    id("dev.rikka.tools.refine")
 }
 
 android {
@@ -9,18 +10,11 @@ android {
 
     defaultConfig {
         minSdk = 21
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
         }
 
         create("debug_release") {
@@ -36,4 +30,7 @@ android {
 }
 
 dependencies {
+    annotationProcessor("dev.rikka.tools.refine:annotation-processor:4.3.0")
+    compileOnly("dev.rikka.tools.refine:annotation:4.3.0")
+    implementation("androidx.annotation:annotation-jvm:1.9.1")
 }

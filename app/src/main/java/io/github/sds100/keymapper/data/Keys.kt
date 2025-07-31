@@ -10,7 +10,10 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
  */
 object Keys {
     val darkTheme = stringPreferencesKey("pref_dark_theme_mode")
+
+    @Deprecated("Now use the libsu library to detect whether the device is rooted.")
     val hasRootPermission = booleanPreferencesKey("pref_allow_root_features")
+
     val shownAppIntro = booleanPreferencesKey("pref_first_time")
     val showImePickerNotification = booleanPreferencesKey("pref_show_ime_notification")
     val showToggleKeyMapsNotification = booleanPreferencesKey("pref_show_remappings_notification")
@@ -59,8 +62,6 @@ object Keys {
     val lastInstalledVersionCodeBackground =
         intPreferencesKey("last_installed_version_accessibility_service")
 
-    val shownQuickStartGuideHint = booleanPreferencesKey("tap_target_quick_start_guide")
-
     val fingerprintGesturesAvailable =
         booleanPreferencesKey("fingerprint_gestures_available")
 
@@ -93,4 +94,28 @@ object Keys {
      * Whether the user viewed the advanced triggers.
      */
     val viewedAdvancedTriggers = booleanPreferencesKey("key_viewed_advanced_triggers")
+
+    val neverShowNotificationPermissionAlert =
+        booleanPreferencesKey("key_never_show_notification_permission_alert")
+
+    val shownTapTargetCreateKeyMap =
+        booleanPreferencesKey("key_shown_tap_target_create_key_map")
+
+    val shownTapTargetRecordTrigger =
+        booleanPreferencesKey("key_shown_tap_target_record_trigger")
+
+    val shownTapTargetAdvancedTriggers =
+        booleanPreferencesKey("key_shown_tap_target_advanced_triggers")
+
+    val shownTapTargetChooseAction =
+        booleanPreferencesKey("key_shown_tap_target_choose_action")
+
+    val shownTapTargetChooseConstraint =
+        booleanPreferencesKey("key_shown_tap_target_choose_constraint")
+
+    val skipTapTargetTutorial =
+        booleanPreferencesKey("key_skip_tap_target_tutorial")
+
+    val isProModeWarningUnderstood =
+        booleanPreferencesKey("key_is_pro_mode_warning_understood")
 }

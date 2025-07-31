@@ -67,15 +67,32 @@ sealed class ActionData : Comparable<ActionData> {
     }
 
     @Serializable
-    data class Sound(
-        val soundUid: String,
-        val soundDescription: String,
-    ) : ActionData() {
+    sealed class Sound : ActionData() {
         override val id = ActionId.SOUND
 
-        override fun compareTo(other: ActionData) = when (other) {
-            is Sound -> soundUid.compareTo(other.soundUid)
-            else -> super.compareTo(other)
+        @Serializable
+        data class SoundFile(
+            val soundUid: String,
+            val soundDescription: String,
+        ) : Sound() {
+            override fun compareTo(other: ActionData): Int {
+                return when (other) {
+                    is SoundFile -> soundUid.compareTo(other.soundUid)
+                    else -> super.compareTo(other)
+                }
+            }
+        }
+
+        @Serializable
+        data class Ringtone(
+            val uri: String,
+        ) : Sound() {
+            override fun compareTo(other: ActionData): Int {
+                return when (other) {
+                    is Ringtone -> uri.compareTo(other.uri)
+                    else -> super.compareTo(other)
+                }
+            }
         }
     }
 
@@ -365,6 +382,21 @@ sealed class ActionData : Comparable<ActionData> {
         data class Rewind(override val packageName: String) : ControlMediaForApp() {
             override val id = ActionId.REWIND_PACKAGE
         }
+
+        @Serializable
+        data class Stop(override val packageName: String) : ControlMediaForApp() {
+            override val id = ActionId.STOP_MEDIA_PACKAGE
+        }
+
+        @Serializable
+        data class StepForward(override val packageName: String) : ControlMediaForApp() {
+            override val id = ActionId.STEP_FORWARD_PACKAGE
+        }
+
+        @Serializable
+        data class StepBackward(override val packageName: String) : ControlMediaForApp() {
+            override val id = ActionId.STEP_BACKWARD_PACKAGE
+        }
     }
 
     @Serializable
@@ -402,6 +434,21 @@ sealed class ActionData : Comparable<ActionData> {
         @Serializable
         data object Rewind : ControlMedia() {
             override val id = ActionId.REWIND
+        }
+
+        @Serializable
+        data object Stop : ControlMedia() {
+            override val id = ActionId.STOP_MEDIA
+        }
+
+        @Serializable
+        data object StepForward : ControlMedia() {
+            override val id = ActionId.STEP_FORWARD
+        }
+
+        @Serializable
+        data object StepBackward : ControlMedia() {
+            override val id = ActionId.STEP_BACKWARD
         }
     }
 
@@ -853,6 +900,8 @@ sealed class ActionData : Comparable<ActionData> {
         val nodeAction: NodeInteractionType,
         val packageName: String,
         val text: String?,
+        val tooltip: String?,
+        val hint: String?,
         val contentDescription: String?,
         val className: String?,
         val viewResourceId: String?,

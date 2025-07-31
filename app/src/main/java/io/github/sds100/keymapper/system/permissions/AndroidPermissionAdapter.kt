@@ -100,7 +100,7 @@ class AndroidPermissionAdapter(
             .stateIn(coroutineScope, SharingStarted.Eagerly, false)
 
     init {
-        suAdapter.isGranted
+        suAdapter.isRooted
             .drop(1)
             .onEach { onPermissionsChanged() }
             .launchIn(coroutineScope)
@@ -278,7 +278,7 @@ class AndroidPermissionAdapter(
                 Manifest.permission.CALL_PHONE,
             ) == PERMISSION_GRANTED
 
-        Permission.ROOT -> suAdapter.isGranted.value
+        Permission.ROOT -> suAdapter.isRooted.value
 
         Permission.IGNORE_BATTERY_OPTIMISATION ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

@@ -9,19 +9,19 @@ import io.github.sds100.keymapper.constraints.DetectConstraintsUseCaseImpl
 import io.github.sds100.keymapper.constraints.GetConstraintErrorUseCaseImpl
 import io.github.sds100.keymapper.floating.ListFloatingLayoutsUseCase
 import io.github.sds100.keymapper.floating.ListFloatingLayoutsUseCaseImpl
-import io.github.sds100.keymapper.mappings.FingerprintGesturesSupportedUseCaseImpl
-import io.github.sds100.keymapper.mappings.PauseKeyMapsUseCaseImpl
-import io.github.sds100.keymapper.mappings.keymaps.ConfigKeyMapUseCase
-import io.github.sds100.keymapper.mappings.keymaps.CreateKeyMapShortcutUseCaseImpl
-import io.github.sds100.keymapper.mappings.keymaps.DisplayKeyMapUseCase
-import io.github.sds100.keymapper.mappings.keymaps.DisplayKeyMapUseCaseImpl
-import io.github.sds100.keymapper.mappings.keymaps.detection.DetectKeyMapsUseCaseImpl
+import io.github.sds100.keymapper.keymaps.ConfigKeyMapUseCase
+import io.github.sds100.keymapper.keymaps.CreateKeyMapShortcutUseCaseImpl
+import io.github.sds100.keymapper.keymaps.DisplayKeyMapUseCase
+import io.github.sds100.keymapper.keymaps.DisplayKeyMapUseCaseImpl
+import io.github.sds100.keymapper.keymaps.FingerprintGesturesSupportedUseCaseImpl
+import io.github.sds100.keymapper.keymaps.PauseKeyMapsUseCaseImpl
+import io.github.sds100.keymapper.keymaps.detection.DetectKeyMapsUseCaseImpl
 import io.github.sds100.keymapper.onboarding.OnboardingUseCaseImpl
 import io.github.sds100.keymapper.reroutekeyevents.RerouteKeyEventsUseCaseImpl
 import io.github.sds100.keymapper.shizuku.ShizukuInputEventInjector
 import io.github.sds100.keymapper.sorting.SortKeyMapsUseCase
 import io.github.sds100.keymapper.sorting.SortKeyMapsUseCaseImpl
-import io.github.sds100.keymapper.system.Shell
+import io.github.sds100.keymapper.system.SimpleShell
 import io.github.sds100.keymapper.system.accessibility.ControlAccessibilityServiceUseCase
 import io.github.sds100.keymapper.system.accessibility.ControlAccessibilityServiceUseCaseImpl
 import io.github.sds100.keymapper.system.accessibility.IAccessibilityService
@@ -57,6 +57,7 @@ object UseCases {
         ServiceLocator.accessibilityServiceAdapter(ctx),
         ServiceLocator.settingsRepository(ctx),
         ServiceLocator.purchasingManager(ctx),
+        ServiceLocator.ringtoneAdapter(ctx),
         getActionError(ctx),
         getConstraintError(ctx),
     )
@@ -71,6 +72,7 @@ object UseCases {
         ServiceLocator.cameraAdapter(ctx),
         ServiceLocator.soundsManager(ctx),
         ServiceLocator.shizukuAdapter(ctx),
+        ServiceLocator.ringtoneAdapter(ctx),
     )
 
     fun getConstraintError(ctx: Context) = GetConstraintErrorUseCaseImpl(
@@ -88,6 +90,8 @@ object UseCases {
         ServiceLocator.shizukuAdapter(ctx),
         ServiceLocator.permissionAdapter(ctx),
         ServiceLocator.packageManagerAdapter(ctx),
+        ServiceLocator.purchasingManager(ctx),
+        ServiceLocator.roomKeyMapRepository(ctx),
     )
 
     fun createKeymapShortcut(ctx: Context) = CreateKeyMapShortcutUseCaseImpl(
@@ -100,6 +104,7 @@ object UseCases {
     fun pauseKeyMaps(ctx: Context) = PauseKeyMapsUseCaseImpl(
         ServiceLocator.settingsRepository(ctx),
         ServiceLocator.mediaAdapter(ctx),
+        ServiceLocator.ringtoneAdapter(ctx),
     )
 
     fun showImePicker(ctx: Context): ShowInputMethodPickerUseCase = ShowInputMethodPickerUseCaseImpl(
@@ -138,11 +143,11 @@ object UseCases {
         ServiceLocator.inputMethodAdapter(ctx),
         ServiceLocator.fileAdapter(ctx),
         ServiceLocator.suAdapter(ctx),
-        Shell,
+        SimpleShell,
         ServiceLocator.intentAdapter(ctx),
         getActionError(ctx),
         keyMapperImeMessenger(ctx, keyEventRelayService),
-        ShizukuInputEventInjector(coroutineScope = ServiceLocator.appCoroutineScope(ctx)),
+        ShizukuInputEventInjector(),
         ServiceLocator.packageManagerAdapter(ctx),
         ServiceLocator.appShortcutAdapter(ctx),
         ServiceLocator.popupMessageAdapter(ctx),
@@ -163,6 +168,7 @@ object UseCases {
         ServiceLocator.soundsManager(ctx),
         ServiceLocator.permissionAdapter(ctx),
         ServiceLocator.notificationReceiverAdapter(ctx),
+        ServiceLocator.ringtoneAdapter(ctx),
     )
 
     fun detectKeyMaps(
@@ -179,7 +185,7 @@ object UseCases {
         ServiceLocator.audioAdapter(ctx),
         keyMapperImeMessenger(ctx, keyEventRelayService),
         service,
-        ShizukuInputEventInjector(ServiceLocator.appCoroutineScope(ctx)),
+        ShizukuInputEventInjector(),
         ServiceLocator.popupMessageAdapter(ctx),
         ServiceLocator.permissionAdapter(ctx),
         ServiceLocator.resourceProvider(ctx),

@@ -1,5 +1,6 @@
 package io.github.sds100.keymapper.actions
 
+import androidx.core.net.toUri
 import io.github.sds100.keymapper.actions.pinchscreen.PinchScreenType
 import io.github.sds100.keymapper.actions.uielement.NodeInteractionType
 import io.github.sds100.keymapper.data.db.typeconverter.ConstantTypeConverters
@@ -239,11 +240,24 @@ object ActionDataEntityMapper {
             ActionId.PHONE_CALL -> ActionData.PhoneCall(number = entity.data)
 
             ActionId.SOUND -> {
-                val soundFileDescription =
-                    entity.extras.getData(ActionEntity.EXTRA_SOUND_FILE_DESCRIPTION)
-                        .valueOrNull() ?: return null
+                val isRingtoneUri = try {
+                    entity.data.toUri().scheme != null
+                } catch (e: Exception) {
+                    false
+                }
 
-                ActionData.Sound(soundUid = entity.data, soundDescription = soundFileDescription)
+                if (isRingtoneUri) {
+                    return ActionData.Sound.Ringtone(entity.data)
+                } else {
+                    val soundFileDescription =
+                        entity.extras.getData(ActionEntity.EXTRA_SOUND_FILE_DESCRIPTION)
+                            .valueOrNull() ?: return null
+
+                    ActionData.Sound.SoundFile(
+                        soundUid = entity.data,
+                        soundDescription = soundFileDescription,
+                    )
+                }
             }
 
             ActionId.VOLUME_INCREASE_STREAM,
@@ -356,6 +370,9 @@ object ActionDataEntityMapper {
             ActionId.PREVIOUS_TRACK_PACKAGE,
             ActionId.FAST_FORWARD_PACKAGE,
             ActionId.REWIND_PACKAGE,
+            ActionId.STOP_MEDIA_PACKAGE,
+            ActionId.STEP_FORWARD_PACKAGE,
+            ActionId.STEP_BACKWARD_PACKAGE,
             -> {
                 val packageName =
                     entity.extras.getData(ActionEntity.EXTRA_PACKAGE_NAME).valueOrNull()
@@ -382,6 +399,15 @@ object ActionDataEntityMapper {
 
                     ActionId.REWIND_PACKAGE ->
                         ActionData.ControlMediaForApp.Rewind(packageName)
+
+                    ActionId.STOP_MEDIA_PACKAGE ->
+                        ActionData.ControlMediaForApp.Stop(packageName)
+
+                    ActionId.STEP_FORWARD_PACKAGE ->
+                        ActionData.ControlMediaForApp.StepForward(packageName)
+
+                    ActionId.STEP_BACKWARD_PACKAGE ->
+                        ActionData.ControlMediaForApp.StepBackward(packageName)
 
                     else -> throw Exception("don't know how to create system action for $actionId")
                 }
@@ -461,6 +487,9 @@ object ActionDataEntityMapper {
             ActionId.PREVIOUS_TRACK -> ActionData.ControlMedia.PreviousTrack
             ActionId.FAST_FORWARD -> ActionData.ControlMedia.FastForward
             ActionId.REWIND -> ActionData.ControlMedia.Rewind
+            ActionId.STOP_MEDIA -> ActionData.ControlMedia.Stop
+            ActionId.STEP_FORWARD -> ActionData.ControlMedia.StepForward
+            ActionId.STEP_BACKWARD -> ActionData.ControlMedia.StepBackward
 
             ActionId.GO_BACK -> ActionData.GoBack
             ActionId.GO_HOME -> ActionData.GoHome
@@ -542,6 +571,12 @@ object ActionDataEntityMapper {
                 val text =
                     entity.extras.getData(ActionEntity.EXTRA_ACCESSIBILITY_TEXT).valueOrNull()
 
+                val tooltip =
+                    entity.extras.getData(ActionEntity.EXTRA_ACCESSIBILITY_TOOLTIP).valueOrNull()
+
+                val hint =
+                    entity.extras.getData(ActionEntity.EXTRA_ACCESSIBILITY_HINT).valueOrNull()
+
                 val className =
                     entity.extras.getData(ActionEntity.EXTRA_ACCESSIBILITY_CLASS_NAME).valueOrNull()
 
@@ -567,6 +602,8 @@ object ActionDataEntityMapper {
                     packageName = packageName,
                     text = text,
                     contentDescription = contentDescription,
+                    tooltip = tooltip,
+                    hint = hint,
                     className = className,
                     viewResourceId = viewResourceId,
                     uniqueId = uniqueId,
@@ -636,8 +673,17 @@ object ActionDataEntityMapper {
         is ActionData.PinchScreen -> "${data.x},${data.y},${data.distance},${data.pinchType},${data.fingerCount},${data.duration}"
         is ActionData.Text -> data.text
         is ActionData.Url -> data.url
-        is ActionData.Sound -> data.soundUid
+        is ActionData.Sound -> when (data) {
+            is ActionData.Sound.Ringtone -> data.uri
+            is ActionData.Sound.SoundFile -> data.soundUid
+        }
+
         is ActionData.InteractUiElement -> data.description
+        is ActionData.ControlMediaForApp.Rewind -> SYSTEM_ACTION_ID_MAP[data.id]!!
+        is ActionData.ControlMediaForApp.Stop -> SYSTEM_ACTION_ID_MAP[data.id]!!
+        is ActionData.ControlMedia.Rewind -> SYSTEM_ACTION_ID_MAP[data.id]!!
+        is ActionData.ControlMedia.Stop -> SYSTEM_ACTION_ID_MAP[data.id]!!
+        is ActionData.GoBack -> SYSTEM_ACTION_ID_MAP[data.id]!!
         else -> SYSTEM_ACTION_ID_MAP[data.id]!!
     }
 
@@ -794,7 +840,7 @@ object ActionDataEntityMapper {
         is ActionData.Text -> emptyList()
         is ActionData.Url -> emptyList()
 
-        is ActionData.Sound -> listOf(
+        is ActionData.Sound.SoundFile -> listOf(
             EntityExtra(ActionEntity.EXTRA_SOUND_FILE_DESCRIPTION, data.soundDescription),
         )
 
@@ -834,6 +880,10 @@ object ActionDataEntityMapper {
             }
 
             data.text?.let { add(EntityExtra(ActionEntity.EXTRA_ACCESSIBILITY_TEXT, it)) }
+
+            data.tooltip?.let { add(EntityExtra(ActionEntity.EXTRA_ACCESSIBILITY_TOOLTIP, it)) }
+
+            data.hint?.let { add(EntityExtra(ActionEntity.EXTRA_ACCESSIBILITY_HINT, it)) }
 
             data.className?.let {
                 add(
@@ -982,6 +1032,12 @@ object ActionDataEntityMapper {
         ActionId.FAST_FORWARD_PACKAGE to "fast_forward_package",
         ActionId.REWIND to "rewind",
         ActionId.REWIND_PACKAGE to "rewind_package",
+        ActionId.STOP_MEDIA to "stop_media",
+        ActionId.STOP_MEDIA_PACKAGE to "stop_media_package",
+        ActionId.STEP_FORWARD to "step_forward",
+        ActionId.STEP_FORWARD_PACKAGE to "step_forward_package",
+        ActionId.STEP_BACKWARD to "step_backward",
+        ActionId.STEP_BACKWARD_PACKAGE to "step_backward_package",
 
         ActionId.GO_BACK to "go_back",
         ActionId.GO_HOME to "go_home",

@@ -409,4 +409,17 @@
         app:popEnterAnim="@anim/slide_in_left"
         app:popExitAnim="@anim/slide_out_right" />
 
+    <fragment
+        android:id="@+id/proModeFragment"
+        android:name="io.github.sds100.keymapper.promode.ProModeFragment"
+        android:label="ProModeFragment" />
+
+    <action
+        android:id="@+id/to_proModeFragment"
+        app:destination="@id/proModeFragment"
+        app:enterAnim="@anim/slide_in_right"
+        app:exitAnim="@anim/slide_out_left"
+        app:popEnterAnim="@anim/slide_in_left"
+        app:popExitAnim="@anim/slide_out_right" />
+
 </navigation>

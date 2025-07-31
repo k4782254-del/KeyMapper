@@ -20,8 +20,8 @@ import io.github.sds100.keymapper.data.repositories.RoomGroupRepository
 import io.github.sds100.keymapper.data.repositories.RoomKeyMapRepository
 import io.github.sds100.keymapper.data.repositories.RoomLogRepository
 import io.github.sds100.keymapper.data.repositories.SettingsPreferenceRepository
+import io.github.sds100.keymapper.keymaps.ConfigKeyMapUseCaseController
 import io.github.sds100.keymapper.logging.LogRepository
-import io.github.sds100.keymapper.mappings.keymaps.ConfigKeyMapUseCaseController
 import io.github.sds100.keymapper.purchasing.PurchasingManagerImpl
 import io.github.sds100.keymapper.shizuku.ShizukuAdapter
 import io.github.sds100.keymapper.system.accessibility.AccessibilityServiceAdapter
@@ -49,7 +49,8 @@ import io.github.sds100.keymapper.system.permissions.SystemFeatureAdapter
 import io.github.sds100.keymapper.system.phone.PhoneAdapter
 import io.github.sds100.keymapper.system.popup.PopupMessageAdapter
 import io.github.sds100.keymapper.system.power.PowerAdapter
-import io.github.sds100.keymapper.system.root.SuAdapter
+import io.github.sds100.keymapper.system.ringtones.RingtoneAdapter
+import io.github.sds100.keymapper.system.root.SuAdapterImpl
 import io.github.sds100.keymapper.system.url.OpenUrlAdapter
 import io.github.sds100.keymapper.system.vibrator.VibratorAdapter
 import io.github.sds100.keymapper.system.volume.VolumeAdapter
@@ -266,7 +267,7 @@ object ServiceLocator {
 
     fun audioAdapter(context: Context): VolumeAdapter = (context.applicationContext as KeyMapperApp).audioAdapter
 
-    fun suAdapter(context: Context): SuAdapter = (context.applicationContext as KeyMapperApp).suAdapter
+    fun suAdapter(context: Context): SuAdapterImpl = (context.applicationContext as KeyMapperApp).suAdapter
 
     fun intentAdapter(context: Context): IntentAdapter = (context.applicationContext as KeyMapperApp).intentAdapter
 
@@ -295,6 +296,8 @@ object ServiceLocator {
     fun appCoroutineScope(context: Context): CoroutineScope = (context.applicationContext as KeyMapperApp).appCoroutineScope
 
     fun purchasingManager(context: Context): PurchasingManagerImpl = (context.applicationContext as KeyMapperApp).purchasingManager
+
+    fun ringtoneAdapter(context: Context): RingtoneAdapter = (context.applicationContext as KeyMapperApp).ringtoneManagerAdapter
 
     private fun createDatabase(context: Context): AppDatabase = Room.databaseBuilder(
         context.applicationContext,

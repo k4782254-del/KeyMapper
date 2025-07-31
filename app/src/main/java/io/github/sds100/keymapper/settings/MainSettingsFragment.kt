@@ -27,6 +27,7 @@ import io.github.sds100.keymapper.util.firstBlocking
 import io.github.sds100.keymapper.util.launchRepeatOnLifecycle
 import io.github.sds100.keymapper.util.str
 import io.github.sds100.keymapper.util.strArray
+import io.github.sds100.keymapper.util.ui.setupNavigation
 import io.github.sds100.keymapper.util.viewLifecycleScope
 import kotlinx.coroutines.flow.collectLatest
 import splitties.alertdialog.appcompat.alertDialog
@@ -59,6 +60,12 @@ class MainSettingsFragment : BaseSettingsFragment() {
 
             requireContext().contentResolver.takePersistableUriPermission(it, takeFlags)
         }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        viewModel.setupNavigation(this)
+    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         preferenceManager.preferenceDataStore = viewModel.sharedPrefsDataStoreWrapper
@@ -127,6 +134,21 @@ class MainSettingsFragment : BaseSettingsFragment() {
     }
 
     private fun populatePreferenceScreen() = preferenceScreen.apply {
+        // Pro mode
+        Preference(requireContext()).apply {
+            isSingleLineTitle = false
+
+            setTitle(R.string.title_pref_pro_mode)
+            setSummary(R.string.summary_pref_pro_mode)
+
+            setOnPreferenceClickListener {
+                viewModel.onProModeClick()
+                true
+            }
+
+            addPreference(this)
+        }
+
         // dark theme
         DropDownPreference(requireContext()).apply {
             key = Keys.darkTheme.name
@@ -490,13 +512,15 @@ class MainSettingsFragment : BaseSettingsFragment() {
         }
 
         // root permission switch
-        SwitchPreferenceCompat(requireContext()).apply {
-            key = Keys.hasRootPermission.name
-            setDefaultValue(false)
-
+        Preference(requireContext()).apply {
             isSingleLineTitle = false
             setTitle(R.string.title_pref_root_permission)
             setSummary(R.string.summary_pref_root_permission)
+
+            setOnPreferenceClickListener {
+                viewModel.onRequestRootClick()
+                true
+            }
 
             addPreference(this)
         }

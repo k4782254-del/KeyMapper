@@ -181,6 +181,9 @@ class CreateActionDelegate(
             ActionId.PREVIOUS_TRACK_PACKAGE,
             ActionId.FAST_FORWARD_PACKAGE,
             ActionId.REWIND_PACKAGE,
+            ActionId.STOP_MEDIA_PACKAGE,
+            ActionId.STEP_FORWARD_PACKAGE,
+            ActionId.STEP_BACKWARD_PACKAGE,
             -> {
                 val packageName =
                     navigate(
@@ -210,6 +213,15 @@ class CreateActionDelegate(
 
                     ActionId.REWIND_PACKAGE ->
                         ActionData.ControlMediaForApp.Rewind(packageName)
+
+                    ActionId.STOP_MEDIA_PACKAGE ->
+                        ActionData.ControlMediaForApp.Stop(packageName)
+
+                    ActionId.STEP_FORWARD_PACKAGE ->
+                        ActionData.ControlMediaForApp.StepForward(packageName)
+
+                    ActionId.STEP_BACKWARD_PACKAGE ->
+                        ActionData.ControlMediaForApp.StepBackward(packageName)
 
                     else -> throw Exception("don't know how to create action for $actionId")
                 }
@@ -676,14 +688,9 @@ class CreateActionDelegate(
             }
 
             ActionId.SOUND -> {
-                val result = navigate(
+                return navigate(
                     "choose_sound_file",
                     NavDestination.ChooseSound,
-                ) ?: return null
-
-                return ActionData.Sound(
-                    soundUid = result.soundUid,
-                    soundDescription = result.description,
                 )
             }
 
@@ -729,6 +736,9 @@ class CreateActionDelegate(
             ActionId.PREVIOUS_TRACK -> return ActionData.ControlMedia.PreviousTrack
             ActionId.FAST_FORWARD -> return ActionData.ControlMedia.FastForward
             ActionId.REWIND -> return ActionData.ControlMedia.Rewind
+            ActionId.STOP_MEDIA -> return ActionData.ControlMedia.Stop
+            ActionId.STEP_FORWARD -> return ActionData.ControlMedia.StepForward
+            ActionId.STEP_BACKWARD -> return ActionData.ControlMedia.StepBackward
 
             ActionId.GO_BACK -> return ActionData.GoBack
             ActionId.GO_HOME -> return ActionData.GoHome

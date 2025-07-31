@@ -2,7 +2,6 @@ package io.github.sds100.keymapper.util.ui
 
 import io.github.sds100.keymapper.actions.ActionData
 import io.github.sds100.keymapper.actions.pinchscreen.PinchPickCoordinateResult
-import io.github.sds100.keymapper.actions.sound.ChooseSoundFileResult
 import io.github.sds100.keymapper.actions.swipescreen.SwipePickCoordinateResult
 import io.github.sds100.keymapper.actions.tapscreen.PickCoordinateResult
 import io.github.sds100.keymapper.constraints.Constraint
@@ -37,6 +36,7 @@ sealed class NavDestination<R> {
         const val ID_SHIZUKU_SETTINGS = "shizuku_settings"
         const val ID_CONFIG_FLOATING_BUTTON = "config_floating_button"
         const val ID_INTERACT_UI_ELEMENT_ACTION = "interact_ui_element_action"
+        const val ID_PRO_MODE = "pro_mode"
     }
 
     data class ChooseApp(
@@ -80,7 +80,7 @@ sealed class NavDestination<R> {
         override val id: String = ID_CHOOSE_ACTIVITY
     }
 
-    data object ChooseSound : NavDestination<ChooseSoundFileResult>() {
+    data object ChooseSound : NavDestination<ActionData.Sound>() {
         override val id: String = ID_CHOOSE_SOUND
     }
 
@@ -127,5 +127,9 @@ sealed class NavDestination<R> {
 
     data class InteractUiElement(val action: ActionData.InteractUiElement?) : NavDestination<ActionData.InteractUiElement>() {
         override val id: String = ID_INTERACT_UI_ELEMENT_ACTION
+    }
+
+    data object ProMode : NavDestination<Unit>() {
+        override val id: String = ID_PRO_MODE
     }
 }

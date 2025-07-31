@@ -25,9 +25,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -100,7 +100,7 @@ import io.github.sds100.keymapper.groups.GroupBreadcrumbRow
 import io.github.sds100.keymapper.groups.GroupConstraintRow
 import io.github.sds100.keymapper.groups.GroupListItemModel
 import io.github.sds100.keymapper.groups.GroupRow
-import io.github.sds100.keymapper.mappings.keymaps.KeyMapAppBarState
+import io.github.sds100.keymapper.keymaps.KeyMapAppBarState
 import io.github.sds100.keymapper.util.Error
 import io.github.sds100.keymapper.util.drawable
 import io.github.sds100.keymapper.util.ui.compose.ComposeChipModel
@@ -405,6 +405,7 @@ private fun RootGroupAppBar(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChildGroupAppBar(
     modifier: Modifier = Modifier,
@@ -439,7 +440,7 @@ private fun ChildGroupAppBar(
             Column {
                 Row(
                     Modifier
-                        .statusBarsPadding()
+                        .windowInsetsPadding(TopAppBarDefaults.windowInsets)
                         .fillMaxWidth()
                         .heightIn(min = 48.dp)
                         .padding(vertical = 8.dp)

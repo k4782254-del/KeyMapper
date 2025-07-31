@@ -1,9 +1,9 @@
 package io.github.sds100.keymapper.actions
 
 import io.github.sds100.keymapper.R
-import io.github.sds100.keymapper.mappings.keymaps.ConfigKeyMapUseCase
-import io.github.sds100.keymapper.mappings.keymaps.KeyMap
-import io.github.sds100.keymapper.mappings.keymaps.ShortcutModel
+import io.github.sds100.keymapper.keymaps.ConfigKeyMapUseCase
+import io.github.sds100.keymapper.keymaps.KeyMap
+import io.github.sds100.keymapper.keymaps.ShortcutModel
 import io.github.sds100.keymapper.onboarding.OnboardingUseCase
 import io.github.sds100.keymapper.system.permissions.Permission
 import io.github.sds100.keymapper.util.Error
@@ -177,7 +177,6 @@ class ConfigActionsViewModel(
     override fun onEditClick() {
         val actionUid = actionOptionsUid.value ?: return
         coroutineScope.launch {
-            actionOptionsUid.update { null }
             val keyMap = config.keyMap.first().dataOrNull() ?: return@launch
 
             val oldAction = keyMap.actionList.find { it.uid == actionUid } ?: return@launch

@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material3.BottomAppBar
@@ -27,6 +29,7 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,13 +44,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowHeightSizeClass
+import androidx.window.core.layout.WindowWidthSizeClass
 import io.github.sds100.keymapper.R
 import io.github.sds100.keymapper.compose.KeyMapperTheme
 import io.github.sds100.keymapper.util.State
+import io.github.sds100.keymapper.util.ui.compose.CheckBoxText
 import io.github.sds100.keymapper.util.ui.compose.KeyMapperDropdownMenu
 import io.github.sds100.keymapper.util.ui.compose.SearchAppBarActions
+import io.github.sds100.keymapper.util.ui.compose.WindowSizeClassExt.compareTo
 
 @Composable
 fun ChooseElementScreen(
@@ -59,8 +67,11 @@ fun ChooseElementScreen(
     onQueryChange: (String) -> Unit = {},
     onClickElement: (Long) -> Unit = {},
     onSelectInteractionType: (NodeInteractionType?) -> Unit = {},
+    onAdditionalElementsCheckedChange: (Boolean) -> Unit = {},
 ) {
-    var interactionTypeExpanded by rememberSaveable { mutableStateOf(false) }
+    val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+    val widthSizeClass = windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass
+    val heightSizeClass = windowAdaptiveInfo.windowSizeClass.windowHeightSizeClass
 
     Scaffold(
         modifier.displayCutoutPadding(),
@@ -105,67 +116,137 @@ fun ChooseElementScreen(
                     style = MaterialTheme.typography.titleLarge,
                 )
 
-                Text(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    text = stringResource(R.string.action_interact_ui_element_choose_element_text),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
+                if (heightSizeClass == WindowHeightSizeClass.COMPACT || widthSizeClass >= WindowWidthSizeClass.EXPANDED) {
+                    Row {
+                        InfoSection(
+                            modifier = Modifier
+                                .verticalScroll(rememberScrollState())
+                                .weight(1f),
+                            state = state,
+                            onSelectInteractionType = onSelectInteractionType,
+                            onAdditionalElementsCheckedChange = onAdditionalElementsCheckedChange,
+                        )
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.ErrorOutline,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
+                        ListSection(
+                            modifier = Modifier.weight(1f),
+                            state = state,
+                            onClickElement = onClickElement,
+                        )
+                    }
+                } else {
+                    InfoSection(
+                        state = state,
+                        onSelectInteractionType = onSelectInteractionType,
+                        onAdditionalElementsCheckedChange = onAdditionalElementsCheckedChange,
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.action_interact_ui_element_choose_element_not_found_subtitle),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.titleSmall,
+
+                    ListSection(
+                        modifier = Modifier.fillMaxSize(),
+                        state = state,
+                        onClickElement = onClickElement,
                     )
                 }
+            }
+        }
+    }
+}
 
-                Spacer(modifier = Modifier.height(8.dp))
+@Composable
+private fun InfoSection(
+    modifier: Modifier = Modifier,
+    state: State<SelectUiElementState>,
+    onSelectInteractionType: (NodeInteractionType?) -> Unit,
+    onAdditionalElementsCheckedChange: (Boolean) -> Unit,
+) {
+    Column(modifier = modifier) {
+        Text(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            text = stringResource(R.string.action_interact_ui_element_choose_element_text),
+            style = MaterialTheme.typography.bodyMedium,
+        )
 
-                Text(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    text = stringResource(R.string.action_interact_ui_element_choose_element_not_found_text),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-                when (state) {
-                    State.Loading -> LoadingList(modifier = Modifier.fillMaxSize())
-                    is State.Data -> {
-                        val listItems = state.data.listItems
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.ErrorOutline,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = stringResource(R.string.action_interact_ui_element_choose_element_not_found_subtitle),
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.titleSmall,
+            )
+        }
 
-                        if (listItems.isEmpty()) {
-                            EmptyList(modifier = Modifier.fillMaxSize())
-                        } else {
-                            KeyMapperDropdownMenu<NodeInteractionType?>(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                expanded = interactionTypeExpanded,
-                                onExpandedChange = { interactionTypeExpanded = it },
-                                label = { Text(stringResource(R.string.action_interact_ui_element_filter_interaction_type_dropdown)) },
-                                values = state.data.interactionTypes,
-                                selectedValue = state.data.selectedInteractionType,
-                                onValueChanged = onSelectInteractionType,
-                            )
+        Spacer(modifier = Modifier.height(8.dp))
 
-                            Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            text = stringResource(R.string.action_interact_ui_element_choose_element_not_found_text),
+            style = MaterialTheme.typography.bodyMedium,
+        )
 
-                            LoadedList(
-                                modifier = Modifier.fillMaxSize(),
-                                listItems = listItems,
-                                onClick = onClickElement,
-                            )
-                        }
-                    }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (state is State.Data) {
+            var interactionTypeExpanded by rememberSaveable { mutableStateOf(false) }
+
+            CheckBoxText(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                text = stringResource(R.string.action_interact_ui_element_checkbox_additional_elements),
+                isChecked = state.data.showAdditionalElements,
+                onCheckedChange = onAdditionalElementsCheckedChange,
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            KeyMapperDropdownMenu(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                expanded = interactionTypeExpanded,
+                onExpandedChange = { interactionTypeExpanded = it },
+                label = { Text(stringResource(R.string.action_interact_ui_element_filter_interaction_type_dropdown)) },
+                values = state.data.interactionTypes,
+                selectedValue = state.data.selectedInteractionType,
+                onValueChanged = onSelectInteractionType,
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+private fun ListSection(
+    modifier: Modifier = Modifier,
+    state: State<SelectUiElementState>,
+    onClickElement: (Long) -> Unit,
+) {
+    when (state) {
+        State.Loading -> LoadingList(modifier = modifier.fillMaxSize())
+        is State.Data -> {
+            val listItems = state.data.listItems
+
+            Column(modifier = modifier) {
+                if (listItems.isEmpty()) {
+                    EmptyList(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                    )
+                } else {
+                    LoadedList(
+                        modifier = Modifier.fillMaxSize(),
+                        listItems = listItems,
+                        onClick = onClickElement,
+                    )
                 }
             }
         }
@@ -259,6 +340,13 @@ private fun UiElementListItem(
                 )
             }
 
+            if (model.nodeTooltipHint != null) {
+                TextWithLeadingLabel(
+                    title = stringResource(R.string.action_interact_ui_element_tooltip_label),
+                    text = model.nodeTooltipHint,
+                )
+            }
+
             if (model.nodeUniqueId != null) {
                 TextWithLeadingLabel(
                     title = stringResource(R.string.action_interact_ui_element_unique_id_label),
@@ -309,6 +397,7 @@ private fun Empty() {
                     listItems = emptyList(),
                     interactionTypes = emptyList(),
                     selectedInteractionType = null,
+                    showAdditionalElements = false,
                 ),
             ),
             query = "Key Mapper",
@@ -327,38 +416,74 @@ private fun Loading() {
     }
 }
 
+private val listItems = listOf(
+    UiElementListItemModel(
+        id = 1L,
+        nodeText = "Open Settings",
+        nodeClassName = "android.widget.ImageButton",
+        nodeViewResourceId = "menu_button",
+        nodeUniqueId = "123456789",
+        nodeTooltipHint = "Open menu",
+        interactionTypesText = "Tap, Tap and hold, Scroll forward",
+        interactionTypes = setOf(
+            NodeInteractionType.CLICK,
+            NodeInteractionType.LONG_CLICK,
+            NodeInteractionType.SCROLL_FORWARD,
+        ),
+        interacted = true,
+    ),
+)
+
+private val loadedState = SelectUiElementState(
+    listItems = listItems,
+    interactionTypes = listOf(
+        null to "Any",
+        NodeInteractionType.CLICK to "Tap",
+        NodeInteractionType.LONG_CLICK to "Tap and hold",
+    ),
+    selectedInteractionType = null,
+    showAdditionalElements = true,
+)
+
 @Preview
 @Composable
-private fun Loaded() {
-    val listItems = listOf(
-        UiElementListItemModel(
-            id = 1L,
-            nodeText = "Open Settings",
-            nodeClassName = "android.widget.ImageButton",
-            nodeViewResourceId = "menu_button",
-            nodeUniqueId = "123456789",
-            interactionTypesText = "Tap, Tap and hold, Scroll forward",
-            interactionTypes = setOf(
-                NodeInteractionType.CLICK,
-                NodeInteractionType.LONG_CLICK,
-                NodeInteractionType.SCROLL_FORWARD,
-            ),
-        ),
-    )
-
-    val state = SelectUiElementState(
-        listItems = listItems,
-        interactionTypes = listOf(
-            null to "Any",
-            NodeInteractionType.CLICK to "Tap",
-            NodeInteractionType.LONG_CLICK to "Tap and hold",
-        ),
-        selectedInteractionType = null,
-    )
-
+private fun LoadedPortrait() {
     KeyMapperTheme {
         ChooseElementScreen(
-            state = State.Data(state),
+            state = State.Data(loadedState),
+            query = "Key Mapper",
+        )
+    }
+}
+
+@Preview(widthDp = 800, heightDp = 300)
+@Composable
+private fun LoadedPhoneLandscape() {
+    KeyMapperTheme {
+        ChooseElementScreen(
+            state = State.Data(loadedState),
+            query = "Key Mapper",
+        )
+    }
+}
+
+@Preview(device = Devices.TABLET)
+@Composable
+private fun LoadedTablet() {
+    KeyMapperTheme {
+        ChooseElementScreen(
+            state = State.Data(loadedState),
+            query = "Key Mapper",
+        )
+    }
+}
+
+@Preview(device = Devices.NEXUS_7)
+@Composable
+private fun LoadedTabletVertical() {
+    KeyMapperTheme {
+        ChooseElementScreen(
+            state = State.Data(loadedState),
             query = "Key Mapper",
         )
     }

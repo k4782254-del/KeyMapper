@@ -1,2 +1,4 @@
 include ':app'
 include ':systemstubs'
+include ':nativelib'
+include ':privstarter'

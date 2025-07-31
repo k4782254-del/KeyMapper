@@ -16,7 +16,6 @@ import io.github.sds100.keymapper.actions.uielement.InteractUiElementController
 import io.github.sds100.keymapper.data.Keys
 import io.github.sds100.keymapper.data.entities.LogEntryEntity
 import io.github.sds100.keymapper.logging.KeyMapperLoggingTree
-import io.github.sds100.keymapper.mappings.keymaps.trigger.RecordTriggerController
 import io.github.sds100.keymapper.purchasing.PurchasingManagerImpl
 import io.github.sds100.keymapper.settings.ThemeUtils
 import io.github.sds100.keymapper.shizuku.ShizukuAdapterImpl
@@ -50,10 +49,12 @@ import io.github.sds100.keymapper.system.permissions.Permission
 import io.github.sds100.keymapper.system.phone.AndroidPhoneAdapter
 import io.github.sds100.keymapper.system.popup.AndroidToastAdapter
 import io.github.sds100.keymapper.system.power.AndroidPowerAdapter
+import io.github.sds100.keymapper.system.ringtones.AndroidRingtoneAdapter
 import io.github.sds100.keymapper.system.root.SuAdapterImpl
 import io.github.sds100.keymapper.system.url.AndroidOpenUrlAdapter
 import io.github.sds100.keymapper.system.vibrator.AndroidVibratorAdapter
 import io.github.sds100.keymapper.system.volume.AndroidVolumeAdapter
+import io.github.sds100.keymapper.trigger.RecordTriggerController
 import io.github.sds100.keymapper.util.ui.ResourceProviderImpl
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.collectLatest
@@ -129,12 +130,7 @@ class KeyMapperApp : MultiDexApplication() {
     val vibratorAdapter by lazy { AndroidVibratorAdapter(this) }
     val displayAdapter by lazy { AndroidDisplayAdapter(this, coroutineScope = appCoroutineScope) }
     val audioAdapter by lazy { AndroidVolumeAdapter(this) }
-    val suAdapter by lazy {
-        SuAdapterImpl(
-            appCoroutineScope,
-            ServiceLocator.settingsRepository(this),
-        )
-    }
+    val suAdapter by lazy { SuAdapterImpl(appCoroutineScope) }
     val phoneAdapter by lazy { AndroidPhoneAdapter(this, appCoroutineScope) }
     val intentAdapter by lazy { IntentAdapterImpl(this) }
     val mediaAdapter by lazy { AndroidMediaAdapter(this, appCoroutineScope) }
@@ -172,6 +168,10 @@ class KeyMapperApp : MultiDexApplication() {
 
     val purchasingManager: PurchasingManagerImpl by lazy {
         PurchasingManagerImpl(this.applicationContext, appCoroutineScope)
+    }
+
+    val ringtoneManagerAdapter: AndroidRingtoneAdapter by lazy {
+        AndroidRingtoneAdapter(this)
     }
 
     private val loggingTree by lazy {

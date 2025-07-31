@@ -15,7 +15,6 @@ import io.github.sds100.keymapper.actions.keyevent.ConfigKeyEventActionFragment
 import io.github.sds100.keymapper.actions.pinchscreen.PinchPickCoordinateResult
 import io.github.sds100.keymapper.actions.pinchscreen.PinchPickDisplayCoordinateFragment
 import io.github.sds100.keymapper.actions.sound.ChooseSoundFileFragment
-import io.github.sds100.keymapper.actions.sound.ChooseSoundFileResult
 import io.github.sds100.keymapper.actions.swipescreen.SwipePickCoordinateResult
 import io.github.sds100.keymapper.actions.swipescreen.SwipePickDisplayCoordinateFragment
 import io.github.sds100.keymapper.actions.tapscreen.PickCoordinateResult
@@ -230,6 +229,8 @@ fun NavigationViewModel.setupNavigation(fragment: Fragment) {
                 requestKey = requestKey,
                 action = destination.action?.let { Json.encodeToString(destination.action) },
             )
+
+            NavDestination.ProMode -> NavAppDirections.toProModeFragment()
         }
 
         fragment.findNavController().navigate(direction)
@@ -306,7 +307,7 @@ fun NavigationViewModel.sendNavResultFromBundle(
 
         NavDestination.ID_CHOOSE_SOUND -> {
             val json = bundle.getString(ChooseSoundFileFragment.EXTRA_RESULT)!!
-            val result = Json.decodeFromString<ChooseSoundFileResult>(json)
+            val result = Json.decodeFromString<ActionData.Sound>(json)
 
             onNavResult(NavResult(requestKey, result))
         }

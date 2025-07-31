@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -89,6 +90,7 @@ class InteractUiElementViewModel(
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, State.Loading)
 
+    private val selectedElementEntity = MutableStateFlow<AccessibilityNodeEntity?>(null)
     private val _selectedElementState = MutableStateFlow<SelectedUiElementState?>(null)
     val selectedElementState: StateFlow<SelectedUiElementState?> =
         _selectedElementState.asStateFlow()
@@ -117,6 +119,15 @@ class InteractUiElementViewModel(
     private val interactionsByPackage: StateFlow<State<List<AccessibilityNodeEntity>>> = selectedApp
         .filterNotNull()
         .flatMapLatest { packageName -> useCase.getInteractionsByPackage(packageName) }
+        .onEach { state ->
+            // Automatically show additional elements if no elements that were interacted with
+            // were detected.
+            state.ifIsData { list ->
+                if (list.count { it.interacted } == 0) {
+                    showAdditionalElements.update { true }
+                }
+            }
+        }
         .stateIn(viewModelScope, SharingStarted.Lazily, State.Loading)
 
     private val elementListItems: Flow<State<List<UiElementListItemModel>>> = interactionsByPackage
@@ -139,19 +150,28 @@ class InteractUiElementViewModel(
 
     private val selectedInteractionTypeFilter = MutableStateFlow<NodeInteractionType?>(null)
 
+    private val showAdditionalElements: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
     private val filteredElementListItems = combine(
         elementListItems,
         elementSearchQuery,
         selectedInteractionTypeFilter,
-    ) { state, query, interactionType ->
+        showAdditionalElements,
+    ) { state, query, interactionType, showAdditionalElements ->
         state.mapData { listItems ->
             listItems.filter { model ->
+                if (!showAdditionalElements && !model.interacted) {
+                    return@filter false
+                }
+
                 if (interactionType != null && !model.interactionTypes.contains(interactionType)) {
                     return@filter false
                 }
 
                 val modelString = buildString {
                     append(model.nodeText)
+                    append(" ")
+                    append(model.nodeTooltipHint)
                     append(" ")
                     append(model.nodeClassName)
                     append(" ")
@@ -166,7 +186,8 @@ class InteractUiElementViewModel(
         filteredElementListItems,
         interactionTypesFilterItems,
         selectedInteractionTypeFilter,
-    ) { listItemsState, interactionTypesState, selectedInteractionType ->
+        showAdditionalElements,
+    ) { listItemsState, interactionTypesState, selectedInteractionType, showAdditionalElements ->
         val listItems = listItemsState.dataOrNull() ?: return@combine State.Loading
         val interactionTypes = interactionTypesState.dataOrNull() ?: return@combine State.Loading
 
@@ -174,6 +195,7 @@ class InteractUiElementViewModel(
             listItems = listItems,
             interactionTypes = interactionTypes,
             selectedInteractionType = selectedInteractionType,
+            showAdditionalElements = showAdditionalElements,
         )
         State.Data(newState)
     }.stateIn(viewModelScope, SharingStarted.Lazily, State.Loading)
@@ -189,6 +211,7 @@ class InteractUiElementViewModel(
                 appName = appName,
                 appIcon = appIcon,
                 nodeText = action.text ?: action.contentDescription,
+                nodeToolTipHint = action.tooltip ?: action.hint,
                 nodeClassName = action.className,
                 nodeViewResourceId = action.viewResourceId,
                 nodeUniqueId = action.uniqueId,
@@ -202,7 +225,9 @@ class InteractUiElementViewModel(
 
     fun onDoneClick() {
         val selectedElementState = _selectedElementState.value
-        if (selectedElementState == null) {
+        val selectedElementEntity = selectedElementEntity.value
+
+        if (selectedElementState == null || selectedElementEntity == null) {
             return
         }
 
@@ -213,13 +238,15 @@ class InteractUiElementViewModel(
         val action = ActionData.InteractUiElement(
             description = selectedElementState.description,
             nodeAction = selectedElementState.selectedInteraction,
-            packageName = selectedElementState.packageName,
-            text = selectedElementState.nodeText,
-            contentDescription = selectedElementState.nodeText,
-            className = selectedElementState.nodeClassName,
-            viewResourceId = selectedElementState.nodeViewResourceId,
-            uniqueId = selectedElementState.nodeUniqueId,
-            nodeActions = selectedElementState.interactionTypes.map { it.first }.toSet(),
+            packageName = selectedElementEntity.packageName,
+            text = selectedElementEntity.text,
+            contentDescription = selectedElementEntity.contentDescription,
+            tooltip = selectedElementEntity.tooltip,
+            hint = selectedElementEntity.hint,
+            className = selectedElementEntity.className,
+            viewResourceId = selectedElementEntity.viewResourceId,
+            uniqueId = selectedElementEntity.uniqueId,
+            nodeActions = selectedElementEntity.actions,
         )
 
         viewModelScope.launch {
@@ -241,6 +268,11 @@ class InteractUiElementViewModel(
 
     fun onSelectApp(packageName: String) {
         elementSearchQuery.update { null }
+
+        if (packageName != selectedApp.value) {
+            showAdditionalElements.update { false }
+        }
+
         selectedApp.update { packageName }
     }
 
@@ -254,20 +286,32 @@ class InteractUiElementViewModel(
 
             val selectedInteraction =
                 NodeInteractionType.entries.first { interaction.actions.contains(it) }
+            val interactionText = getInteractionTypeString(selectedInteraction)
+            val descriptionElement =
+                interaction.text ?: interaction.contentDescription ?: interaction.tooltip
+                    ?: interaction.hint ?: interaction.viewResourceId
+
+            val description = if (descriptionElement == null) {
+                ""
+            } else {
+                "$interactionText: $descriptionElement"
+            }
 
             val newState = SelectedUiElementState(
-                description = "",
+                description = description,
                 packageName = interaction.packageName,
                 appName = appName,
                 appIcon = appIcon,
                 nodeText = interaction.text ?: interaction.contentDescription,
                 nodeClassName = interaction.className,
+                nodeToolTipHint = interaction.tooltip ?: interaction.hint,
                 nodeViewResourceId = interaction.viewResourceId,
                 nodeUniqueId = interaction.uniqueId,
                 interactionTypes = buildInteractionTypeFilterItems(interaction.actions),
                 selectedInteraction = selectedInteraction,
             )
 
+            selectedElementEntity.update { interaction }
             _selectedElementState.update { newState }
         }
     }
@@ -286,6 +330,10 @@ class InteractUiElementViewModel(
         _selectedElementState.update { state ->
             state?.copy(description = description)
         }
+    }
+
+    fun onAdditionalElementsCheckedChanged(checked: Boolean) {
+        showAdditionalElements.update { checked }
     }
 
     private suspend fun startRecording() {
@@ -325,9 +373,11 @@ class InteractUiElementViewModel(
             nodeViewResourceId = resourceIdText,
             nodeText = node.text ?: node.contentDescription,
             nodeClassName = node.className,
-            nodeUniqueId = node.uniqueId?.toString(),
+            nodeUniqueId = node.uniqueId,
+            nodeTooltipHint = node.tooltip ?: node.hint,
             interactionTypesText = node.actions.joinToString { getInteractionTypeString(it) },
             interactionTypes = node.actions,
+            interacted = node.interacted,
         )
     }
 
@@ -352,7 +402,6 @@ class InteractUiElementViewModel(
             NodeInteractionType.CLICK -> getString(R.string.action_interact_ui_element_interaction_type_click)
             NodeInteractionType.LONG_CLICK -> getString(R.string.action_interact_ui_element_interaction_type_long_click)
             NodeInteractionType.FOCUS -> getString(R.string.action_interact_ui_element_interaction_type_focus)
-            NodeInteractionType.SELECT -> getString(R.string.action_interact_ui_element_interaction_type_select)
             NodeInteractionType.SCROLL_FORWARD -> getString(R.string.action_interact_ui_element_interaction_type_scroll_forward)
             NodeInteractionType.SCROLL_BACKWARD -> getString(R.string.action_interact_ui_element_interaction_type_scroll_backward)
             NodeInteractionType.EXPAND -> getString(R.string.action_interact_ui_element_interaction_type_expand)
@@ -377,6 +426,7 @@ data class SelectedUiElementState(
     val appName: String,
     val appIcon: ComposeIconInfo.Drawable?,
     val nodeText: String?,
+    val nodeToolTipHint: String?,
     val nodeClassName: String?,
     val nodeViewResourceId: String?,
     val nodeUniqueId: String?,
@@ -399,14 +449,20 @@ data class SelectUiElementState(
     val listItems: List<UiElementListItemModel>,
     val interactionTypes: List<Pair<NodeInteractionType?, String>>,
     val selectedInteractionType: NodeInteractionType?,
+    val showAdditionalElements: Boolean,
 )
 
 data class UiElementListItemModel(
     val id: Long,
     val nodeViewResourceId: String?,
     val nodeText: String?,
+    val nodeTooltipHint: String?,
     val nodeClassName: String?,
     val nodeUniqueId: String?,
     val interactionTypesText: String,
     val interactionTypes: Set<NodeInteractionType>,
+    /**
+     * Whether the user interacted with this element.
+     */
+    val interacted: Boolean,
 )
